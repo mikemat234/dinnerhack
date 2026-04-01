@@ -1,0 +1,21 @@
+{
+  "name": "dinnerhack-pipeline",
+  "version": "1.0.0",
+  "description": "Weekly grocery deal scraper for DinnerHack. Scrapes Flipp.com and upserts loss leaders to Supabase.",
+  "type": "module",
+  "main": "scraper.js",
+  "scripts": {
+    "start":     "node scraper.js",
+    "dry-run":   "node scraper.js --dry-run",
+    "debug":     "LOG_LEVEL=debug node scraper.js --dry-run",
+    "install:browsers": "playwright install chromium --with-deps"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.1",
+    "dotenv":                "^16.4.5",
+    "playwright":            "^1.44.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
