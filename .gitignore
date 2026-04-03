@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+pipeline/node_modules/
+
+# Environment variables (contains secrets - never commit these)
+.env
+.env.local
+.env.production
+
+# Build output
+dist/
+
+# Misc
+.DS_Store
+*.log
