@@ -133,8 +133,7 @@ export default function DayCard({ day, updateHeadcount, toggleSaved, regenerateD
       {/* Recipe preview modal / bottom sheet */}
       {showRecipe && day.recipeUrl && (
         <RecipePreview
-          meal={day.meal}
-          recipeUrl={day.recipeUrl}
+          day={day}
           onClose={() => setShowRecipe(false)}
         />
       )}
