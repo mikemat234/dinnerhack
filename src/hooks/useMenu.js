@@ -49,6 +49,7 @@ import {
   filterByNonoList,
   currentWeekOf,
   formatWeekRange,
+  regenerateMealFor,
 }                                                from "./menuBuilder";
 
 // ── Feature flag ──────────────────────────────────────────────────────────────
@@ -134,6 +135,8 @@ export function useMenu(userId) {
   const [saveError,  setSaveError]  = useState(null);
 
   const weekRangeRef = useRef(formatWeekRange());
+  // Keep raw deals accessible for regenerate (no re-render needed)
+  const rawDealsRef  = useRef([]);
 
   // ── Initial data fetch ────────────────────────────────────────────────────
   useEffect(() => {
@@ -183,7 +186,8 @@ export function useMenu(userId) {
           ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList)
           : INITIAL_MENU;
 
-        setDeals(rawDeals.length > 0 ? rawDeals : DEALS);
+        rawDealsRef.current = rawDeals.length > 0 ? rawDeals : DEALS;
+        setDeals(rawDealsRef.current);
         setMenu(builtMenu);
 
       } catch (err) {
@@ -260,6 +264,24 @@ export function useMenu(userId) {
     }
   }, [menu, userId]);
 
+  /**
+   * Regenerate a single day — keeps the same deal, swaps to the next recipe.
+   * Pure local state update — no DB call needed.
+   */
+  const regenerateDay = useCallback((id) => {
+    setMenu(prev => prev.map((day, idx) => {
+      if (day.id !== id) return day;
+
+      // Find the deal this day is anchored to
+      const allDeals = rawDealsRef.current;
+      const topDeals = [...allDeals].sort((a, b) => b.pct - a.pct).slice(0, 5);
+      const deal     = topDeals[idx] ?? topDeals[0];
+      if (!deal) return day;
+
+      return regenerateMealFor(day, deal, idx);
+    }));
+  }, []);
+
   // ── Derived values (memoised) ─────────────────────────────────────────────
 
   const totalSaved = useMemo(
@@ -286,6 +308,7 @@ export function useMenu(userId) {
     weekRange: weekRangeRef.current,
     updateHeadcount,
     toggleSaved,
+    regenerateDay,
     totalSaved,
     totalCost,
     avgPerServing,

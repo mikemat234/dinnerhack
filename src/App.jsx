@@ -51,7 +51,7 @@ function MainApp({ user, signOut, profile }) {
 
   const {
     menu, deals,
-    updateHeadcount, toggleSaved,
+    updateHeadcount, toggleSaved, regenerateDay,
     totalSaved, totalCost, avgPerServing,
     loading, error, saveError, weekRange,
   } = useMenu(user.id);
@@ -77,6 +77,7 @@ function MainApp({ user, signOut, profile }) {
               deals={deals}
               updateHeadcount={updateHeadcount}
               toggleSaved={toggleSaved}
+              regenerateDay={regenerateDay}
               totalSaved={totalSaved}
               totalCost={totalCost}
               avgPerServing={avgPerServing}

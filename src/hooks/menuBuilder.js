@@ -14,6 +14,73 @@
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+// ── Recipe Database ────────────────────────────────────────────────────────────
+// Each ingredient key maps to an array of real recipe options.
+// URLs use AllRecipes anchors (#recipe-body, #recipe-ingredients) to skip
+// straight to the recipe content and minimise blog fluff in the preview.
+// Multiple options per ingredient enable the Regenerate feature.
+export const RECIPE_DATABASE = {
+  chicken: [
+    { meal: "Garlic Lemon Chicken Thighs",     subtitle: "with Roasted Broccoli & Steamed Rice",       emoji: "🍗", prepTime: "35 min", tags: ["High Protein", "Quick"],           recipeUrl: "https://www.allrecipes.com/recipe/8702/garlic-chicken/#recipe-ingredients" },
+    { meal: "Baked BBQ Chicken Thighs",         subtitle: "with Coleslaw & Cornbread",                  emoji: "🍗", prepTime: "45 min", tags: ["Family Favorite", "Easy"],         recipeUrl: "https://www.allrecipes.com/recipe/220158/baked-bbq-chicken/#recipe-ingredients" },
+    { meal: "Chicken Thigh Stir Fry",           subtitle: "with Bell Peppers, Rice & Soy Glaze",        emoji: "🍗", prepTime: "25 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/recipe/228823/quick-chicken-stir-fry/#recipe-ingredients" },
+    { meal: "Creamy Tuscan Chicken",            subtitle: "with Sun-Dried Tomatoes & Spinach",          emoji: "🍗", prepTime: "30 min", tags: ["Date Night", "Comfort Food"],      recipeUrl: "https://www.allrecipes.com/recipe/263011/creamy-tuscan-garlic-chicken/#recipe-ingredients" },
+    { meal: "Chicken Tortilla Soup",            subtitle: "with Avocado, Cheese & Lime",                emoji: "🍲", prepTime: "35 min", tags: ["Meal Prep", "Freezer Friendly"],   recipeUrl: "https://www.allrecipes.com/recipe/33712/chicken-tortilla-soup/#recipe-ingredients" },
+  ],
+  beef: [
+    { meal: "Classic Beef Bolognese",           subtitle: "with Penne Pasta & Parmesan",                emoji: "🍝", prepTime: "45 min", tags: ["Comfort Food", "Family Favorite"], recipeUrl: "https://www.allrecipes.com/recipe/11858/bolognese-sauce/#recipe-ingredients" },
+    { meal: "Beef & Broccoli Stir Fry",         subtitle: "with White Rice & Sesame Sauce",             emoji: "🥦", prepTime: "25 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/recipe/223382/beef-and-broccoli/#recipe-ingredients" },
+    { meal: "Beef Taco Bowls",                  subtitle: "with Pico de Gallo, Rice & Guacamole",       emoji: "🌮", prepTime: "20 min", tags: ["Quick", "Crowd Pleaser"],          recipeUrl: "https://www.allrecipes.com/recipe/256847/easy-ground-beef-tacos/#recipe-ingredients" },
+    { meal: "Classic Meatloaf",                 subtitle: "with Mashed Potatoes & Green Beans",         emoji: "🍖", prepTime: "1 hr",   tags: ["Comfort Food", "Meal Prep"],       recipeUrl: "https://www.allrecipes.com/recipe/16354/simple-meatloaf/#recipe-ingredients" },
+    { meal: "Beef Stuffed Peppers",             subtitle: "with Rice, Tomato Sauce & Mozzarella",       emoji: "🫑", prepTime: "50 min", tags: ["Low Carb", "Meal Prep"],           recipeUrl: "https://www.allrecipes.com/recipe/14909/stuffed-green-peppers/#recipe-ingredients" },
+  ],
+  pork: [
+    { meal: "Slow-Cooker Pulled Pork Bowls",    subtitle: "with Cabbage Slaw & White Rice",             emoji: "🫙", prepTime: "20 min active", tags: ["Meal Prep", "Freezer Friendly"], recipeUrl: "https://www.allrecipes.com/recipe/236078/slow-cooker-pulled-pork/#recipe-ingredients" },
+    { meal: "Pork Chops with Apple Sauce",      subtitle: "with Roasted Sweet Potatoes",                emoji: "🥩", prepTime: "30 min", tags: ["Easy", "Family Favorite"],         recipeUrl: "https://www.allrecipes.com/recipe/127239/pork-chops-with-apple-sauce/#recipe-ingredients" },
+    { meal: "Pork Fried Rice",                  subtitle: "with Eggs, Peas & Soy Sauce",                emoji: "🍳", prepTime: "20 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/recipe/14330/pork-fried-rice/#recipe-ingredients" },
+    { meal: "Honey Garlic Pork Tenderloin",     subtitle: "with Roasted Asparagus & Mashed Potatoes",   emoji: "🥩", prepTime: "35 min", tags: ["Date Night", "Quick"],             recipeUrl: "https://www.allrecipes.com/recipe/231267/honey-garlic-pork-loin/#recipe-ingredients" },
+  ],
+  turkey: [
+    { meal: "Turkey & Vegetable Skillet",       subtitle: "with Garlic Rice & Fresh Herbs",             emoji: "🦃", prepTime: "30 min", tags: ["Lean", "Quick"],                   recipeUrl: "https://www.allrecipes.com/recipe/22918/turkey-skillet/#recipe-ingredients" },
+    { meal: "Turkey Taco Lettuce Wraps",        subtitle: "with Pico de Gallo & Lime Crema",            emoji: "🥬", prepTime: "20 min", tags: ["Low Carb", "Quick"],               recipeUrl: "https://www.allrecipes.com/recipe/237079/turkey-taco-lettuce-cups/#recipe-ingredients" },
+    { meal: "Turkey Meatball Soup",             subtitle: "with Spinach, Pasta & Parmesan",             emoji: "🍲", prepTime: "40 min", tags: ["Comfort Food", "Meal Prep"],       recipeUrl: "https://www.allrecipes.com/recipe/217028/turkey-meatball-soup/#recipe-ingredients" },
+  ],
+  fish: [
+    { meal: "Baked Lemon Herb Fish Fillets",    subtitle: "with Roasted Potatoes & Green Beans",        emoji: "🐟", prepTime: "30 min", tags: ["Light", "High Protein"],           recipeUrl: "https://www.allrecipes.com/recipe/17991/baked-fish-fillets/#recipe-ingredients" },
+    { meal: "Fish Tacos",                       subtitle: "with Cabbage Slaw, Lime & Chipotle Sauce",   emoji: "🌮", prepTime: "25 min", tags: ["Quick", "Crowd Pleaser"],          recipeUrl: "https://www.allrecipes.com/recipe/141257/baja-fish-tacos/#recipe-ingredients" },
+    { meal: "Pan-Fried Fish with Tartar Sauce", subtitle: "with French Fries & Coleslaw",               emoji: "🐟", prepTime: "30 min", tags: ["Family Favorite", "Comfort Food"], recipeUrl: "https://www.allrecipes.com/recipe/12032/pan-fried-fish/#recipe-ingredients" },
+  ],
+  salmon: [
+    { meal: "Pan-Seared Salmon",                subtitle: "with Garlic Butter Rice & Asparagus",        emoji: "🐟", prepTime: "25 min", tags: ["High Protein", "Omega-3"],         recipeUrl: "https://www.allrecipes.com/recipe/229960/simple-pan-seared-salmon/#recipe-ingredients" },
+    { meal: "Honey Glazed Salmon",              subtitle: "with Roasted Broccoli & Brown Rice",         emoji: "🐟", prepTime: "20 min", tags: ["Quick", "Healthy"],                recipeUrl: "https://www.allrecipes.com/recipe/176794/honey-garlic-salmon/#recipe-ingredients" },
+    { meal: "Baked Salmon with Lemon Dill",     subtitle: "with Wild Rice & Steamed Vegetables",        emoji: "🐟", prepTime: "30 min", tags: ["Light", "Date Night"],             recipeUrl: "https://www.allrecipes.com/recipe/22538/baked-salmon-ii/#recipe-ingredients" },
+  ],
+  shrimp: [
+    { meal: "Garlic Butter Shrimp Pasta",       subtitle: "with Linguine & Parsley",                    emoji: "🍝", prepTime: "20 min", tags: ["Quick", "Date Night"],             recipeUrl: "https://www.allrecipes.com/recipe/229628/garlic-shrimp-pasta/#recipe-ingredients" },
+    { meal: "Shrimp Tacos",                     subtitle: "with Avocado, Cilantro & Lime",              emoji: "🌮", prepTime: "20 min", tags: ["Quick", "Crowd Pleaser"],          recipeUrl: "https://www.allrecipes.com/recipe/241589/amazing-shrimp-tacos/#recipe-ingredients" },
+    { meal: "Shrimp Fried Rice",                subtitle: "with Eggs, Peas & Green Onion",              emoji: "🍳", prepTime: "25 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/recipe/70442/shrimp-fried-rice/#recipe-ingredients" },
+  ],
+  pasta: [
+    { meal: "Tomato Cream Pasta",               subtitle: "with Crushed Tomatoes & Fresh Basil",        emoji: "🍝", prepTime: "25 min", tags: ["Vegetarian", "Comfort Food"],      recipeUrl: "https://www.allrecipes.com/recipe/23600/worlds-best-pasta-sauce/#recipe-ingredients" },
+    { meal: "Cacio e Pepe",                     subtitle: "with Pecorino Romano & Black Pepper",        emoji: "🍝", prepTime: "20 min", tags: ["Quick", "Date Night"],             recipeUrl: "https://www.allrecipes.com/recipe/269500/cacio-e-pepe/#recipe-ingredients" },
+    { meal: "Baked Ziti",                       subtitle: "with Ricotta, Mozzarella & Marinara",        emoji: "🫙", prepTime: "50 min", tags: ["Comfort Food", "Freezer Friendly"], recipeUrl: "https://www.allrecipes.com/recipe/24094/baked-ziti-i/#recipe-ingredients" },
+  ],
+  tomato: [
+    { meal: "Tomato Chicken Skillet",           subtitle: "with Crushed Tomatoes, Herbs & Crusty Bread",emoji: "🍅", prepTime: "30 min", tags: ["One Pan", "Quick"],               recipeUrl: "https://www.allrecipes.com/recipe/17697/chicken-in-tomato-sauce/#recipe-ingredients" },
+    { meal: "Classic Tomato Soup",              subtitle: "with Grilled Cheese on the Side",            emoji: "🍅", prepTime: "30 min", tags: ["Comfort Food", "Vegetarian"],      recipeUrl: "https://www.allrecipes.com/recipe/39544/roasted-tomato-basil-soup/#recipe-ingredients" },
+    { meal: "Shakshuka",                        subtitle: "with Eggs Poached in Spiced Tomato Sauce",   emoji: "🍳", prepTime: "25 min", tags: ["Vegetarian", "Brunch"],            recipeUrl: "https://www.allrecipes.com/recipe/246669/chef-johns-shakshuka/#recipe-ingredients" },
+  ],
+  broccoli: [
+    { meal: "Beef & Broccoli Stir Fry",         subtitle: "with White Rice & Sesame Sauce",             emoji: "🥦", prepTime: "25 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/recipe/223382/beef-and-broccoli/#recipe-ingredients" },
+    { meal: "Broccoli Cheddar Soup",            subtitle: "with Crusty Bread for Dipping",              emoji: "🫕", prepTime: "35 min", tags: ["Comfort Food", "Vegetarian"],      recipeUrl: "https://www.allrecipes.com/recipe/39544/roasted-tomato-basil-soup/#recipe-ingredients" },
+    { meal: "Roasted Broccoli Pasta",           subtitle: "with Garlic, Lemon & Parmesan",              emoji: "🍝", prepTime: "30 min", tags: ["Vegetarian", "Quick"],             recipeUrl: "https://www.allrecipes.com/recipe/221523/pasta-with-roasted-broccoli/#recipe-ingredients" },
+  ],
+  default: [
+    { meal: "Sheet Pan Dinner",                 subtitle: "with This Week's Best Deals",                emoji: "🍽️", prepTime: "40 min", tags: ["Easy", "One Pan"],                recipeUrl: "https://www.allrecipes.com/recipes/1947/everyday-cooking/quick-and-easy/one-pan/" },
+    { meal: "One-Pot Rice Bowl",                subtitle: "with Seasoned Protein & Vegetables",         emoji: "🍚", prepTime: "30 min", tags: ["Easy", "Meal Prep"],               recipeUrl: "https://www.allrecipes.com/recipes/17561/everyday-cooking/more-meal-ideas/5-ingredients-or-less/" },
+  ],
+};
+
 // Points awarded when a deal ingredient appears as a PRIMARY PROTEIN in a recipe.
 // Primary proteins are the centre of the meal (chicken, beef, pork…).
 // We award more points here because it maximises savings on the most expensive
@@ -131,18 +198,26 @@ export function filterByNonoList(recipes, nonoList) {
 }
 
 /**
- * Return a synthetic (template-generated) MenuDay for a deal that had no
- * vault match. Used to fill out the 5-day plan for new users.
+ * Find the best RECIPE_DATABASE key for a given deal item.
  */
-function syntheticMealFor(deal, dayIndex) {
+function recipeKeyFor(itemLower) {
+  return Object.keys(RECIPE_DATABASE).find(k => k !== "default" && itemLower.includes(k)) ?? "default";
+}
+
+/**
+ * Return a synthetic (template-generated) MenuDay for a deal that had no
+ * vault match. Uses RECIPE_DATABASE so every meal has a real recipe URL.
+ *
+ * @param {Object} deal
+ * @param {number} dayIndex
+ * @param {number} [recipeIndex=0] - Which recipe option to use (for Regenerate)
+ */
+function syntheticMealFor(deal, dayIndex, recipeIndex = 0) {
   const itemLower = deal.item.toLowerCase();
+  const key       = recipeKeyFor(itemLower);
+  const options   = RECIPE_DATABASE[key];
+  const tpl       = options[recipeIndex % options.length];
 
-  // Find the best template key
-  const templateKey =
-    Object.keys(MEAL_TEMPLATES).find(k => k !== "default" && itemLower.includes(k))
-    ?? "default";
-
-  const tpl = MEAL_TEMPLATES[templateKey];
   const costPerServing = +(deal.sale * ASSUMED_QTY_LBS / 4 + PANTRY_COST_PER_SERVING).toFixed(2);
   const weekSaved      = +((deal.orig - deal.sale) * ASSUMED_QTY_LBS).toFixed(2);
 
@@ -159,8 +234,28 @@ function syntheticMealFor(deal, dayIndex) {
     tags:           tpl.tags,
     emoji:          deal.emoji ?? tpl.emoji,
     isSaved:        false,
+    recipeUrl:      tpl.recipeUrl,
+    _recipeKey:     key,
+    _recipeIndex:   recipeIndex,
     _source:        "synthetic",
   };
+}
+
+/**
+ * Regenerate a menu day — same deal, next recipe option in RECIPE_DATABASE.
+ * Cycles through all options and wraps around.
+ *
+ * @param {Object} currentDay  - Existing MenuDay object
+ * @param {Object} deal        - The deal this day is anchored to
+ * @param {number} dayIndex    - 0–4 (Monday–Friday)
+ * @returns {Object}           - New MenuDay with the next recipe
+ */
+export function regenerateMealFor(currentDay, deal, dayIndex) {
+  const key     = currentDay._recipeKey ?? recipeKeyFor(deal.item.toLowerCase());
+  const options = RECIPE_DATABASE[key] ?? RECIPE_DATABASE.default;
+  const current = currentDay._recipeIndex ?? 0;
+  const next    = (current + 1) % options.length;
+  return syntheticMealFor(deal, dayIndex, next);
 }
 
 // ── Main export ────────────────────────────────────────────────────────────────
@@ -255,6 +350,12 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = []) {
       ? +((deal.orig - deal.sale) * ASSUMED_QTY_LBS).toFixed(2)
       : 0;
 
+    // Look up a recipe URL from the database for vault meals too
+    const dealKey   = deal ? recipeKeyFor(deal.item.toLowerCase()) : "default";
+    const dbOptions = RECIPE_DATABASE[dealKey] ?? RECIPE_DATABASE.default;
+    const dbMatch   = dbOptions.find(r => r.meal.toLowerCase() === recipe.name.toLowerCase());
+    const recipeUrl = recipe.recipe_url ?? dbMatch?.recipeUrl ?? dbOptions[0]?.recipeUrl ?? null;
+
     return {
       id:             String(recipe.id),
       day:            DAYS[idx],
@@ -267,7 +368,10 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = []) {
       headcount:      recipe.headcount ?? 4,
       tags:           recipe.tags ?? [],
       emoji:          recipe.emoji ?? "🍽️",
-      isSaved:        true, // it came from the vault — it's already saved
+      isSaved:        true,
+      recipeUrl,
+      _recipeKey:     dealKey,
+      _recipeIndex:   0,
       _source:        "vault",
     };
   });

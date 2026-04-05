@@ -105,7 +105,7 @@ function SaveErrorToast({ message }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function MenuDashboard({
   menu, deals,
-  updateHeadcount, toggleSaved,
+  updateHeadcount, toggleSaved, regenerateDay,
   totalSaved, totalCost, avgPerServing,
   weekRange,
   loading, error, saveError,
@@ -147,6 +147,7 @@ export default function MenuDashboard({
             day={day}
             updateHeadcount={updateHeadcount}
             toggleSaved={toggleSaved}
+            regenerateDay={regenerateDay}
           />
         ))}
       </div>
