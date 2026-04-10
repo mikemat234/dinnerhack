@@ -241,7 +241,7 @@ function syntheticMealFor(deal, dayIndex, recipeIndex = 0, spoonacularByKey = {}
       tags:            tpl.tags ?? [],
       emoji:           deal.emoji ?? tpl.emoji ?? "🍽️",
       isSaved:         false,
-      recipeUrl:       tpl.source_url ?? ("https://www.allrecipes.com/search?q=" + encodeURIComponent(tpl.meal)),
+      recipeUrl:       tpl.source_url ?? ("https://spoonacular.com/recipes/" + tpl.meal.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") + "-" + tpl.spoonacular_id),
       imageUrl:        tpl.image_url ?? null,
       _recipeKey:      key,
       _recipeIndex:    recipeIndex,
