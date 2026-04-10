@@ -1,193 +1,137 @@
 // ─── flipp.js ─────────────────────────────────────────────────────────────────
-// Scrapes weekly flyer items from Flipp.com using Playwright.
+// Fetches weekly flyer items from Flipp's API (dam.flippenterprise.net).
 //
 // Strategy:
-//   1. Navigate to https://flipp.com/home/{zip_code}
-//   2. Intercept all responses from backflipp.wishabi.com — this is the internal
-//      API Flipp's SPA calls to load flyer data.
-//   3. Wait for the stores we care about to appear in the intercepted JSON.
-//   4. Return raw item arrays keyed by merchant name.
+//   1. GET /api/flipp/flyers?postal_code={zip} → list of active flyers
+//   2. Filter to target stores (aldi, giant eagle, walmart, etc.)
+//   3. For each matching flyer, GET /api/flipp/flyers/{id}/flyer_items
+//   4. Return raw item arrays keyed by merchant name
 //
-// Flipp API response shape (from each item):
-//   {
-//     id:            number,
-//     name:          string,
-//     description:   string | null,
-//     current_price: number | null,   // sale price
-//     pre_price:     number | null,   // original price
-//     price_text:    string | null,   // fallback "2 for $5.00 / lb"
-//     category:      string | null,
-//     merchant_name: string,
-//     flyer_id:      number,
-//     image_url:     string | null,
-//     valid_from:    string,          // ISO date
-//     valid_to:      string,
-//   }
+// No Playwright needed — direct HTTP calls to Flipp's API.
+// Much more reliable than browser automation.
+//
+// Discovered via Chrome DevTools on April 10, 2026:
+//   Old API: backflipp.wishabi.com  (no longer works)
+//   New API: dam.flippenterprise.net (confirmed working)
 // ──────────────────────────────────────────────────────────────────────────────
 
-import { chromium } from "playwright";
 import logger from "./logger.js";
 
-// Rotate through these to reduce fingerprinting risk.
-const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
-];
+const FLIPP_BASE = "https://dam.flippenterprise.net/api/flipp";
 
-const FLIPP_BASE      = "https://flipp.com/home";
-// Broaden pattern to catch Flipp's API regardless of which subdomain they use.
-// Flipp has historically used backflipp.wishabi.com but may have migrated.
-const API_PATTERNS = [
-  /backflipp\.wishabi\.com/,
-  /api\.flipp\.com/,
-  /cdn\.flipp\.com/,
-  /flipp\.com.*\/flyers/,
-  /flipp\.com.*\/items/,
-  /wishabi\.com/,
-];
-const PAGE_TIMEOUT_MS = 60_000;   // increased from 45s — Railway can be slow
-const IDLE_TIMEOUT_MS = 12_000;   // increased from 8s — give more time for XHR
+// Delay between API calls to avoid rate limiting
+const CALL_DELAY_MS = 300;
 
-/**
- * Pick a random user agent from the rotation list.
- */
-function randomUA() {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+// Headers that mimic a real browser request
+const HEADERS = {
+  "User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept":          "application/json, text/plain, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Referer":         "https://flipp.com/",
+  "Origin":          "https://flipp.com",
+};
+
+// Confirmed working endpoints (discovered via Chrome DevTools, April 10 2026):
+//   Flyer listing: GET /api/flipp/data?locale=en&postal_code={zip}
+//     → returns { flyers: [...], coupons: [...], ... }
+//     → each flyer has: id, merchant, valid_from, valid_to
+//   Flyer items:   GET /api/flipp/flyers/{id}/flyer_items?locale=en
+//     → returns array of item objects
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
- * Given a raw Flipp API response body (parsed JSON), extract any arrays of
- * items that look like flyer deal records. Flipp sometimes wraps items under
- * different keys depending on the endpoint (items, flyer_items, results, etc.).
+ * Fetch the list of active flyers for a given ZIP code.
+ * Uses /api/flipp/data endpoint (confirmed working April 2026).
+ * Returns an array of flyer objects with id, merchant, valid_from, valid_to, etc.
  */
-function extractItemsFromResponse(data) {
-  if (!data || typeof data !== "object") return [];
+async function fetchFlyers(postalCode) {
+  const url = FLIPP_BASE + "/data?locale=en&postal_code=" + postalCode;
 
-  // Direct array of items
-  if (Array.isArray(data)) {
-    if (data.length > 0 && ("current_price" in data[0] || "pre_price" in data[0])) {
-      return data;
-    }
+  logger.info("[flipp] Fetching flyer list for ZIP: " + postalCode);
+
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) {
+    throw new Error("Flipp data API returned HTTP " + res.status);
   }
 
-  // Wrapped under known keys
-  for (const key of ["items", "flyer_items", "results", "data"]) {
-    if (Array.isArray(data[key]) && data[key].length > 0) {
-      const sample = data[key][0];
-      if ("current_price" in sample || "pre_price" in sample || "name" in sample) {
-        return data[key];
-      }
-    }
-  }
+  const data = await res.json();
 
-  return [];
+  // Response is { flyers: [...], coupons: [...], ... }
+  const flyers = data.flyers ?? [];
+  logger.info("[flipp] Found " + flyers.length + " active flyers");
+  return flyers;
 }
 
 /**
- * Scrapes Flipp.com for a given ZIP code and returns raw deal items grouped
- * by merchant name (lowercased).
+ * Fetch all deal items for a specific flyer ID.
+ * Returns an array of item objects with name, current_price, pre_price, etc.
+ */
+async function fetchFlyerItems(flyerId, merchantName) {
+  const url = FLIPP_BASE + "/flyers/" + flyerId + "/flyer_items?locale=en";
+
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) {
+    logger.warn("[flipp] Could not fetch items for flyer " + flyerId + " (" + merchantName + "): HTTP " + res.status);
+    return [];
+  }
+
+  const data = await res.json();
+  const items = Array.isArray(data) ? data : (data.flyer_items ?? data.items ?? data.data ?? []);
+
+  // Attach merchant_name to each item so transform.js can group them
+  // Use both merchant_name and merchant for compatibility
+  return items.map(item => ({ ...item, merchant_name: merchantName, merchant: merchantName }));
+}
+
+/**
+ * Main export — fetches all deal items for target stores in a given ZIP code.
  *
- * @param {string}   zipCode     - e.g. "15944"
- * @param {string[]} targetStores - lowercased store names to filter by
- * @returns {Promise<Object>}  e.g. { "aldi": [...], "giant eagle": [...] }
+ * @param {string}   zipCode       - e.g. "15944"
+ * @param {string[]} targetStores  - lowercased store names e.g. ["aldi", "walmart"]
+ * @returns {Promise<Object>}      - e.g. { "aldi": [...], "walmart": [...] }
  */
 export async function scrapeFlipp(zipCode, targetStores) {
-  const ua = randomUA();
-  logger.info(`[flipp] Launching browser (UA: ${ua.slice(0, 40)}...)`);
+  logger.info("[flipp] Starting Flipp API fetch for ZIP " + zipCode);
 
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-  });
+  // ── Step 1: Get all flyers for this ZIP ───────────────────────────────────
+  const allFlyers = await fetchFlyers(zipCode);
 
-  const context = await browser.newContext({
-    userAgent: ua,
-    viewport: { width: 1280, height: 900 },
-    locale: "en-US",
-    extraHTTPHeaders: {
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept": "application/json, text/plain, */*",
-    },
-  });
-
-  // ── Collect all items seen from wishabi API responses ─────────────────────
-  const collectedItems = [];
-
-  context.on("response", async (response) => {
-    try {
-      const url = response.url();
-
-      // Log all API-like URLs at debug level so we can diagnose if pattern changes
-      if (url.includes("flipp.com") || url.includes("wishabi.com")) {
-        logger.debug(`[flipp] API response: ${url.slice(0, 100)}`);
-      }
-
-      // Check against all known API patterns
-      const matchesPattern = API_PATTERNS.some(p => p.test(url));
-      if (!matchesPattern) return;
-      if (!response.ok()) return;
-
-      const contentType = response.headers()["content-type"] ?? "";
-      if (!contentType.includes("application/json")) return;
-
-      const body = await response.json().catch(() => null);
-      if (!body) return;
-
-      const items = extractItemsFromResponse(body);
-      if (items.length > 0) {
-        logger.info(`[flipp] Captured ${items.length} items from ${url.slice(0, 80)}`);
-        collectedItems.push(...items);
-      }
-    } catch {
-      // Non-fatal: some responses may not be JSON or may time out
+  // ── Step 2: Filter to target stores ──────────────────────────────────────
+  const matchedFlyers = [];
+  for (const flyer of allFlyers) {
+    // API uses "merchant" field (confirmed April 2026)
+    const merchantName = flyer.merchant ?? flyer.merchant_name ?? flyer.name ?? "";
+    const merchant = merchantName.toLowerCase().trim();
+    const matchedStore = targetStores.find(target =>
+      merchant.includes(target) || target.includes(merchant)
+    );
+    if (matchedStore) {
+      matchedFlyers.push({ ...flyer, _merchantName: merchantName, _matchedStore: matchedStore });
+      logger.info("[flipp] Matched: " + merchantName + " → " + matchedStore);
     }
-  });
-
-  const page = await context.newPage();
-
-  try {
-    const url = `${FLIPP_BASE}/${zipCode}?locale=en-US`;
-    logger.info(`[flipp] Navigating to ${url}`);
-
-    await page.goto(url, {
-      waitUntil: "domcontentloaded",
-      timeout: PAGE_TIMEOUT_MS,
-    });
-
-    // Wait for network to quiet down so all flyer requests complete
-    await page.waitForLoadState("networkidle", { timeout: IDLE_TIMEOUT_MS })
-      .catch(() => logger.warn("[flipp] Network did not fully idle — proceeding with collected data"));
-
-    // Extra buffer for any deferred XHR calls
-    await page.waitForTimeout(3_000);
-
-    logger.info(`[flipp] Collected ${collectedItems.length} raw items total`);
-  } finally {
-    await page.close();
-    await context.close();
-    await browser.close();
   }
 
-  // ── Group by merchant ──────────────────────────────────────────────────────
+  logger.info("[flipp] Matched " + matchedFlyers.length + " flyers for target stores");
+
+  // ── Step 3: Fetch items for each matched flyer ────────────────────────────
   const grouped = {};
   for (const store of targetStores) {
     grouped[store] = [];
   }
 
-  for (const item of collectedItems) {
-    const merchant = (item.merchant_name ?? "").toLowerCase().trim();
-    for (const target of targetStores) {
-      if (merchant.includes(target) || target.includes(merchant)) {
-        grouped[target].push(item);
-        break;
-      }
-    }
+  for (const flyer of matchedFlyers) {
+    await delay(CALL_DELAY_MS);
+    const items = await fetchFlyerItems(flyer.id, flyer._merchantName);
+    logger.info("[flipp] " + flyer._merchantName + ": " + items.length + " items fetched");
+    grouped[flyer._matchedStore].push(...items);
   }
 
+  // ── Step 4: Log summary ───────────────────────────────────────────────────
   for (const [store, items] of Object.entries(grouped)) {
-    logger.info(`[flipp] ${store}: ${items.length} raw items captured`);
+    logger.info("[flipp] " + store + ": " + items.length + " raw items captured");
   }
 
   return grouped;

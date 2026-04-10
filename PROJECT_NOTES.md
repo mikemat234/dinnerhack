@@ -115,14 +115,15 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 
 ## Known Issues / Next Steps
 
-### 🔴 CRITICAL — Flipp Scraper Getting 0 Deals
-- **Problem:** `scraper.js` runs but captures 0 items from Flipp.com
-- **Root cause:** Flipp changed their API — old pattern `backflipp.wishabi.com`
-  no longer matches any network responses
-- **Partial fix done:** Broadened URL patterns in `flipp.js` to catch more domains
-- **Workaround:** Run `node pipeline/seedDeals.js` manually to insert test deals
-- **Next step:** Run scraper locally with `LOG_LEVEL=debug` to see what URLs
-  Flipp is actually calling, then update the pattern
+### ✅ FIXED — Flipp Scraper (April 10, 2026)
+- **Was:** `scraper.js` returned 0 items — old API domain `backflipp.wishabi.com` gone
+- **Fix:** Discovered new endpoint via Chrome DevTools Network tab:
+  - **Flyer listing:** `GET https://dam.flippenterprise.net/api/flipp/data?locale=en&postal_code={zip}`
+    → returns `{ flyers: [...] }` — each flyer has `id`, `merchant`, `valid_from`, `valid_to`
+  - **Flyer items:** `GET https://dam.flippenterprise.net/api/flipp/flyers/{id}/flyer_items?locale=en`
+    → returns array of item objects (unchanged, was already working)
+- **Also fixed:** merchant field is `merchant` not `merchant_name` in new API response
+- **Confirmed:** 57 flyers returned for ZIP 15944 including Giant Eagle, ALDI, Walmart, Target, Dollar General
 
 ### 🟡 Railway Cron — promoteRecipes not scheduled yet
 - `promoteRecipes.js` exists but hasn't been added to Railway cron schedule
