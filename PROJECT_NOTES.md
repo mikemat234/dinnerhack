@@ -1,0 +1,164 @@
+# DinnerHack — Project Notes
+
+Last updated: April 10, 2026
+
+---
+
+## What DinnerHack Does
+A weekly meal planning app that scrapes grocery store deals (Aldi, Giant Eagle),
+finds the best loss leaders, and builds a personalized 5-day dinner menu around
+them — with real recipes, cost-per-serving calculations, and weekly savings totals.
+
+---
+
+## Live URLs
+- **App:** https://www.dinnerhack.app
+- **GitHub:** https://github.com/mikemat234/dinnerhack
+- **Vercel:** https://vercel.com/mikemat234s-projects/dinnerhack
+- **Supabase:** https://supabase.com (project: urgtcdwzjteslxqtecak)
+- **Railway:** https://railway.app (pipeline service: amiable-miracle)
+
+---
+
+## Tech Stack
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + Vite |
+| Backend/DB | Supabase (Postgres + Auth + RLS) |
+| Hosting | Vercel (auto-deploy from GitHub main) |
+| Pipeline | Node.js on Railway (weekly cron) |
+| Recipes API | Spoonacular (free tier, 150 req/day) |
+
+---
+
+## Project Structure
+```
+dinnerhack/
+├── src/
+│   ├── components/
+│   │   ├── menu/
+│   │   │   └── DayCard.jsx          ← Day card with Regenerate + View Recipe
+│   │   ├── vault/RecipeVault.jsx    ← User's saved meals
+│   │   ├── auth/                    ← Login/signup/onboarding
+│   │   └── shared/                  ← Tag, HeadcountSelector
+│   ├── hooks/
+│   │   ├── useMenu.js               ← Main data hook (deals + recipes + vault)
+│   │   └── menuBuilder.js           ← Pure functions: scoring, building menu
+│   └── lib/
+│       └── supabase.js              ← Supabase client
+├── pipeline/
+│   ├── scraper.js                   ← Entry point — orchestrates ETL
+│   ├── flipp.js                     ← Scrapes Flipp.com for weekly deals
+│   ├── transform.js                 ← Normalizes/filters raw deal data
+│   ├── db.js                        ← Supabase upsert functions
+│   ├── fetchRecipes.js              ← Calls Spoonacular, populates recipes table
+│   ├── promoteRecipes.js            ← Promotes popular saved meals → community pool
+│   ├── seedDeals.js                 ← Manual deal seeding for testing
+│   ├── logger.js                    ← Logging utility
+│   └── .env                         ← Pipeline credentials (not in git)
+└── supabase/
+    └── recipes-table.sql            ← SQL to create recipes table
+```
+
+---
+
+## Supabase Tables
+| Table | Purpose | Written By |
+|-------|---------|-----------|
+| `deals` | Weekly grocery deals from Flipp | pipeline/scraper.js |
+| `saved_meals` | User's recipe vault | frontend (user action) |
+| `profiles` | User preferences, nono list, stores | frontend |
+| `recipes` | Spoonacular recipe data | pipeline/fetchRecipes.js |
+| `community_recipes` | Popular meals promoted from saved_meals | pipeline/promoteRecipes.js |
+| `pipeline_runs` | Scraper run log | pipeline/scraper.js |
+
+---
+
+## Recipe Priority Stack (how menu suggestions are ranked)
+1. **User's saved meals** (personal vault) — highest priority, best personalization
+2. **Community recipes** (meals saved by 3+ different subscribers) — grows automatically
+3. **Spoonacular recipes** (real recipes fetched weekly from API) — 41 recipes loaded
+4. **Static RECIPE_DATABASE** (hardcoded fallback in menuBuilder.js) — always works
+
+---
+
+## Environment Variables
+
+### Frontend (.env in root)
+```
+VITE_SUPABASE_URL=https://urgtcdwzjteslxqtecak.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_Mru44KsjUDTjw3bu5UR76A_8Y6t4SbB
+```
+
+### Pipeline (pipeline/.env — NOT in git)
+```
+SUPABASE_URL=https://urgtcdwzjteslxqtecak.supabase.co
+SUPABASE_SERVICE_KEY=<service role key — rotate this, was shared in chat>
+SPOONACULAR_API_KEY=e56f147ec621495eb8a89586a95261ca
+ZIP_CODE=15944
+MIN_DISCOUNT_PCT=30
+```
+
+### Railway Environment Variables
+Same as pipeline/.env above — set in Railway → amiable-miracle → Variables
+
+---
+
+## Weekly Pipeline (runs on Railway cron — Mondays 2am)
+```
+node scraper.js        ← scrapes Flipp.com deals → populates deals table
+node fetchRecipes.js   ← fetches Spoonacular recipes → populates recipes table
+node promoteRecipes.js ← promotes popular saved meals → community_recipes table
+```
+
+---
+
+## Known Issues / Next Steps
+
+### 🔴 CRITICAL — Flipp Scraper Getting 0 Deals
+- **Problem:** `scraper.js` runs but captures 0 items from Flipp.com
+- **Root cause:** Flipp changed their API — old pattern `backflipp.wishabi.com`
+  no longer matches any network responses
+- **Partial fix done:** Broadened URL patterns in `flipp.js` to catch more domains
+- **Workaround:** Run `node pipeline/seedDeals.js` manually to insert test deals
+- **Next step:** Run scraper locally with `LOG_LEVEL=debug` to see what URLs
+  Flipp is actually calling, then update the pattern
+
+### 🟡 Railway Cron — promoteRecipes not scheduled yet
+- `promoteRecipes.js` exists but hasn't been added to Railway cron schedule
+- Add it to run weekly after scraper.js and fetchRecipes.js
+
+### 🟡 Rotate Supabase Service Key
+- The service role key was shared in chat on April 10, 2026
+- Go to Supabase → Project Settings → API → regenerate service_role key
+- Update Railway env var and pipeline/.env with the new key
+
+### 🟢 Community Recipes — needs real subscriber data to activate
+- Table is created, promotion job is written
+- Won't show results until 3+ users save the same meal
+- Threshold can be lowered: `node promoteRecipes.js --threshold 2`
+
+---
+
+## How to Deploy Changes
+1. Edit files in `C:\Users\Liqui\Documents\dinnerhack`
+2. Double-click `push-changes.bat` (updates the staged files list first)
+3. Vercel auto-deploys on GitHub push — check vercel.com for status
+
+## How to Seed Deals for Testing
+```
+cd C:\Users\Liqui\Documents\dinnerhack\pipeline
+node seedDeals.js
+```
+
+## How to Re-fetch Spoonacular Recipes
+```
+cd C:\Users\Liqui\Documents\dinnerhack\pipeline
+node fetchRecipes.js
+```
+
+## How to Check Community Recipe Promotion
+```
+cd C:\Users\Liqui\Documents\dinnerhack\pipeline
+node promoteRecipes.js --dry-run
+```
