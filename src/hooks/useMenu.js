@@ -102,6 +102,25 @@ async function fetchVaultMeals(userId) {
   return data ?? [];
 }
 
+/**
+ * Fetch this week's Spoonacular recipes from the `recipes` table.
+ * These are populated weekly by pipeline/fetchRecipes.js.
+ * Non-fatal: returns [] if the table doesn't exist yet or has no rows.
+ */
+async function fetchSpoonacularRecipes(weekOf) {
+  const { data, error } = await supabase
+    .from("recipes")
+    .select("id, spoonacular_id, ingredient_key, meal, subtitle, emoji, prep_time, tags, source_url, image_url, servings, week_of")
+    .eq("week_of", weekOf);
+
+  if (error) {
+    // Table may not exist yet — non-fatal, fall back to static DB
+    console.warn("[useMenu] Could not fetch spoonacular recipes:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
 // ── Saved-meal upsert payload ──────────────────────────────────────────────────
 
 function buildVaultPayload(userId, menuDay) {
@@ -164,8 +183,8 @@ export function useMenu(userId) {
       try {
         const weekOf = currentWeekOf();
 
-        // ── Parallel fetch: deals + profile + vault ──────────────────────────
-        const [rawDeals, profile, vaultMeals] = await Promise.all([
+        // ── Parallel fetch: deals + profile + vault + spoonacular recipes ────
+        const [rawDeals, profile, vaultMeals, spoonacularRecipes] = await Promise.all([
           fetchDeals(weekOf),
           fetchUserProfile(userId).catch(err => {
             console.warn("[useMenu] Profile not found:", err.message);
@@ -175,15 +194,23 @@ export function useMenu(userId) {
             console.warn("[useMenu] Vault fetch failed:", err.message);
             return [];
           }),
+          fetchSpoonacularRecipes(weekOf).catch(err => {
+            console.warn("[useMenu] Spoonacular recipes not available:", err.message);
+            return [];
+          }),
         ]);
 
         if (cancelled) return;
 
         const nonoList = profile?.nono_list ?? [];
 
+        if (spoonacularRecipes.length > 0) {
+          console.info("[useMenu] Using", spoonacularRecipes.length, "Spoonacular recipes from database");
+        }
+
         // ── Build the 5-day menu ──────────────────────────────────────────────
         const builtMenu = rawDeals.length > 0
-          ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList)
+          ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList, spoonacularRecipes)
           : INITIAL_MENU;
 
         rawDealsRef.current = rawDeals.length > 0 ? rawDeals : DEALS;
