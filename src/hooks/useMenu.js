@@ -114,8 +114,25 @@ async function fetchSpoonacularRecipes(weekOf) {
     .eq("week_of", weekOf);
 
   if (error) {
-    // Table may not exist yet — non-fatal, fall back to static DB
     console.warn("[useMenu] Could not fetch spoonacular recipes:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Fetch community recipes — meals promoted from saved_meals by promoteRecipes.js.
+ * These are meals saved by multiple subscribers, ranked by save_count.
+ * Non-fatal: returns [] if the table is empty or not yet populated.
+ */
+async function fetchCommunityRecipes() {
+  const { data, error } = await supabase
+    .from("community_recipes")
+    .select("id, meal, subtitle, emoji, prep_time, tags, ingredient_key, save_count, source_url, image_url")
+    .order("save_count", { ascending: false });
+
+  if (error) {
+    console.warn("[useMenu] Could not fetch community recipes:", error.message);
     return [];
   }
   return data ?? [];
@@ -183,8 +200,8 @@ export function useMenu(userId) {
       try {
         const weekOf = currentWeekOf();
 
-        // ── Parallel fetch: deals + profile + vault + spoonacular recipes ────
-        const [rawDeals, profile, vaultMeals, spoonacularRecipes] = await Promise.all([
+        // ── Parallel fetch: deals + profile + vault + spoonacular + community ──
+        const [rawDeals, profile, vaultMeals, spoonacularRecipes, communityRecipes] = await Promise.all([
           fetchDeals(weekOf),
           fetchUserProfile(userId).catch(err => {
             console.warn("[useMenu] Profile not found:", err.message);
@@ -198,6 +215,10 @@ export function useMenu(userId) {
             console.warn("[useMenu] Spoonacular recipes not available:", err.message);
             return [];
           }),
+          fetchCommunityRecipes().catch(err => {
+            console.warn("[useMenu] Community recipes not available:", err.message);
+            return [];
+          }),
         ]);
 
         if (cancelled) return;
@@ -205,12 +226,19 @@ export function useMenu(userId) {
         const nonoList = profile?.nono_list ?? [];
 
         if (spoonacularRecipes.length > 0) {
-          console.info("[useMenu] Using", spoonacularRecipes.length, "Spoonacular recipes from database");
+          console.info("[useMenu] Spoonacular recipes loaded:", spoonacularRecipes.length);
         }
+        if (communityRecipes.length > 0) {
+          console.info("[useMenu] Community recipes loaded:", communityRecipes.length);
+        }
+
+        // Merge community recipes into spoonacular pool — community recipes rank
+        // first since they are proven popular with real subscribers.
+        const allRecipes = [...communityRecipes, ...spoonacularRecipes];
 
         // ── Build the 5-day menu ──────────────────────────────────────────────
         const builtMenu = rawDeals.length > 0
-          ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList, spoonacularRecipes)
+          ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList, allRecipes)
           : INITIAL_MENU;
 
         rawDealsRef.current = rawDeals.length > 0 ? rawDeals : DEALS;
