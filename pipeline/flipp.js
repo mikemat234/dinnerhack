@@ -48,7 +48,9 @@ function delay(ms) {
  * Returns an array of flyer objects with id, merchant, valid_from, valid_to, etc.
  */
 async function fetchFlyers(postalCode) {
-  const url = FLIPP_BASE + "/data?locale=en&postal_code=" + postalCode;
+  // sid is required but can be any number (Flipp uses it for session analytics only)
+  const sid = Math.floor(Math.random() * 9999999999999999);
+  const url = FLIPP_BASE + "/data?locale=en&postal_code=" + postalCode + "&sid=" + sid;
 
   logger.info("[flipp] Fetching flyer list for ZIP: " + postalCode);
 
