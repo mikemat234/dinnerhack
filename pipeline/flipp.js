@@ -37,9 +37,18 @@ const USER_AGENTS = [
 ];
 
 const FLIPP_BASE      = "https://flipp.com/home";
-const WISHABI_PATTERN = /backflipp\.wishabi\.com/;
-const PAGE_TIMEOUT_MS = 45_000;
-const IDLE_TIMEOUT_MS = 8_000;
+// Broaden pattern to catch Flipp's API regardless of which subdomain they use.
+// Flipp has historically used backflipp.wishabi.com but may have migrated.
+const API_PATTERNS = [
+  /backflipp\.wishabi\.com/,
+  /api\.flipp\.com/,
+  /cdn\.flipp\.com/,
+  /flipp\.com.*\/flyers/,
+  /flipp\.com.*\/items/,
+  /wishabi\.com/,
+];
+const PAGE_TIMEOUT_MS = 60_000;   // increased from 45s — Railway can be slow
+const IDLE_TIMEOUT_MS = 12_000;   // increased from 8s — give more time for XHR
 
 /**
  * Pick a random user agent from the rotation list.
@@ -109,7 +118,15 @@ export async function scrapeFlipp(zipCode, targetStores) {
   context.on("response", async (response) => {
     try {
       const url = response.url();
-      if (!WISHABI_PATTERN.test(url)) return;
+
+      // Log all API-like URLs at debug level so we can diagnose if pattern changes
+      if (url.includes("flipp.com") || url.includes("wishabi.com")) {
+        logger.debug(`[flipp] API response: ${url.slice(0, 100)}`);
+      }
+
+      // Check against all known API patterns
+      const matchesPattern = API_PATTERNS.some(p => p.test(url));
+      if (!matchesPattern) return;
       if (!response.ok()) return;
 
       const contentType = response.headers()["content-type"] ?? "";
@@ -120,7 +137,7 @@ export async function scrapeFlipp(zipCode, targetStores) {
 
       const items = extractItemsFromResponse(body);
       if (items.length > 0) {
-        logger.debug(`[flipp] Captured ${items.length} items from ${url.slice(0, 80)}`);
+        logger.info(`[flipp] Captured ${items.length} items from ${url.slice(0, 80)}`);
         collectedItems.push(...items);
       }
     } catch {
