@@ -225,6 +225,20 @@ export function useMenu(userId) {
 
         const nonoList = profile?.nono_list ?? [];
 
+        // ── Filter deals to the user's preferred stores ───────────────────────
+        // profile.stores is set during onboarding (e.g. ["Walmart", "ALDI"])
+        // deals.store comes from the scraper (e.g. "Walmart", "Giant Eagle")
+        // Match case-insensitively so "ALDI" matches "aldi" etc.
+        const preferredStores = (profile?.stores ?? []).map(s => s.toLowerCase());
+        const filteredDeals = preferredStores.length > 0
+          ? rawDeals.filter(d => {
+              const dealStore = (d.store ?? "").toLowerCase();
+              return preferredStores.some(s =>
+                dealStore.includes(s) || s.includes(dealStore)
+              );
+            })
+          : rawDeals; // show all if no preference set (fallback)
+
         if (spoonacularRecipes.length > 0) {
           console.info("[useMenu] Spoonacular recipes loaded:", spoonacularRecipes.length);
         }
@@ -237,11 +251,11 @@ export function useMenu(userId) {
         const allRecipes = [...communityRecipes, ...spoonacularRecipes];
 
         // ── Build the 5-day menu ──────────────────────────────────────────────
-        const builtMenu = rawDeals.length > 0
-          ? buildMenuFromDeals(rawDeals, vaultMeals, nonoList, allRecipes)
+        const builtMenu = filteredDeals.length > 0
+          ? buildMenuFromDeals(filteredDeals, vaultMeals, nonoList, allRecipes)
           : INITIAL_MENU;
 
-        rawDealsRef.current = rawDeals.length > 0 ? rawDeals : DEALS;
+        rawDealsRef.current = filteredDeals.length > 0 ? filteredDeals : DEALS;
         setDeals(rawDealsRef.current);
         setMenu(builtMenu);
 

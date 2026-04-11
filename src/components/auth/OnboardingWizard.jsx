@@ -17,17 +17,20 @@ import { useState } from "react";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
+// Stores the scraper supports — matches pipeline/scraper.js STORE_MAP keys
 const AVAILABLE_STORES = [
-  "Aldi",
-  "Giant Eagle",
-  "Kroger",
-  "Walmart",
-  "Meijer",
-  "Costco",
-  "Trader Joe's",
-  "Whole Foods",
-  "Target",
-  "Sam's Club",
+  { name: "Walmart",       emoji: "🛒" },
+  { name: "ALDI",          emoji: "🛍️" },
+  { name: "Giant Eagle",   emoji: "🦅" },
+  { name: "Kroger",        emoji: "🏪" },
+  { name: "Target",        emoji: "🎯" },
+  { name: "Dollar General",emoji: "💲" },
+  { name: "Meijer",        emoji: "🛒" },
+  { name: "Publix",        emoji: "🏪" },
+  { name: "Safeway",       emoji: "🏪" },
+  { name: "Food Lion",     emoji: "🦁" },
+  { name: "Whole Foods",   emoji: "🌿" },
+  { name: "Trader Joe's",  emoji: "🌺" },
 ];
 
 const COMMON_ALLERGENS = [
@@ -113,12 +116,12 @@ function StoreStep({ selected, setSelected }) {
         subtitle="We'll only show you deals from your chosen stores."
       />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {AVAILABLE_STORES.map(store => {
-          const active = selected.includes(store);
+        {AVAILABLE_STORES.map(({ name, emoji }) => {
+          const active = selected.includes(name);
           return (
             <button
-              key={store}
-              onClick={() => toggle(store)}
+              key={name}
+              onClick={() => toggle(name)}
               style={{
                 padding: "12px 14px", borderRadius: 10, border: "none", cursor: "pointer",
                 background: active ? "#f0fdf4" : "#f9fafb",
@@ -128,9 +131,11 @@ function StoreStep({ selected, setSelected }) {
                 outline: active ? "2px solid #16a34a" : "2px solid transparent",
                 textAlign: "left",
                 transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 8,
               }}
             >
-              {active ? "✓ " : ""}{store}
+              <span style={{ fontSize: 16 }}>{active ? "✓" : emoji}</span>
+              {name}
             </button>
           );
         })}
@@ -340,7 +345,7 @@ function HeadcountStep({ familyName, setFamilyName, headcount, setHeadcount }) {
 
 export default function OnboardingWizard({ saveProfile }) {
   const [step,        setStep]        = useState(1);
-  const [stores,      setStores]      = useState(["Aldi", "Giant Eagle"]);
+  const [stores,      setStores]      = useState(["Walmart", "ALDI"]);
   const [nonoList,    setNonoList]    = useState([]);
   const [familyName,  setFamilyName]  = useState("My Family");
   const [headcount,   setHeadcount]   = useState(4);
