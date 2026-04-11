@@ -1,6 +1,6 @@
 # DinnerHack — Project Notes
 
-Last updated: April 10, 2026
+Last updated: April 10, 2026 (Session 2)
 
 ---
 
@@ -104,12 +104,18 @@ Same as pipeline/.env above — set in Railway → amiable-miracle → Variables
 
 ---
 
-## Weekly Pipeline (runs on Railway cron — Mondays 2am)
+## Weekly Pipeline (runs on Railway cron)
+**Schedule:** `0 23 * * 3,0` — Wednesday 11pm + Sunday 11pm UTC (7pm Eastern)
+- Wednesday catches: Giant Eagle, ALDI, Kroger, Publix, Safeway
+- Sunday catches: Target (new ad starts Sunday), Walmart (updates Thu/Fri)
+
 ```
 node scraper.js        ← scrapes Flipp.com deals → populates deals table
 node fetchRecipes.js   ← fetches Spoonacular recipes → populates recipes table
 node promoteRecipes.js ← promotes popular saved meals → community_recipes table
 ```
+
+**Manual retrigger:** Railway → amiable-miracle → click Deploy button
 
 ---
 
@@ -125,6 +131,17 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - **Also fixed:** merchant field is `merchant` not `merchant_name` in new API response
 - **Confirmed:** 57 flyers returned for ZIP 15944 including Giant Eagle, ALDI, Walmart, Target, Dollar General
 
+### ✅ FIXED — Recipe link fallback (April 10, 2026)
+- Spoonacular recipes with a real `source_url` → link to that site (Foodista, Food.com, etc.)
+- Spoonacular recipes with null `source_url` → link to AllRecipes search for that meal name
+- Static fallback recipes → always link to AllRecipes search
+- AllRecipes preferred over spoonacular.com because: multiple recipe options, step photos, familiar UX
+- Wife-approved ✓
+
+### ✅ FIXED — Cron schedule updated (April 10, 2026)
+- Changed from `0 6 * * 1` (Monday 6am) to `0 23 * * 3,0` (Wed + Sun 11pm UTC)
+- Set via `pipeline/railway.json` (not Railway dashboard UI — file takes precedence)
+
 ### 🟡 Railway Cron — promoteRecipes not scheduled yet
 - `promoteRecipes.js` exists but hasn't been added to Railway cron schedule
 - Add it to run weekly after scraper.js and fetchRecipes.js
@@ -133,6 +150,28 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - The service role key was shared in chat on April 10, 2026
 - Go to Supabase → Project Settings → API → regenerate service_role key
 - Update Railway env var and pipeline/.env with the new key
+
+### 🔵 NEXT SESSION — Store Picker (onboarding)
+**Decision made:** Use store selection instead of geolocation.
+
+**Why store picker beats geolocation:**
+- Users know which stores they shop at
+- National chains (Walmart, ALDI, Target, Dollar General) have identical deals nationwide
+- Regional chains (Giant Eagle, Kroger, Publix) are self-selecting — users only see what's in their area
+- No location permission dialog, no privacy concerns, less friction to sign up
+- Respects real-world constraints: closest store wins, gas is $4+/gallon
+
+**Core value prop copy:** "Pick the stores you already go to. We'll plan meals around their sales so every trip counts."
+
+**What to build:**
+1. Onboarding screen — grid of store logos with checkboxes (Walmart, ALDI, Giant Eagle, Dollar General, Target, Kroger, Publix, Safeway, Meijer, etc.)
+2. Add `preferred_stores TEXT[]` column to `profiles` table in Supabase
+3. Filter deals in `useMenu.js` to only show deals from user's selected stores
+4. Minimum 1 store required to continue onboarding
+
+**Estimated build time:** 2-3 hours
+
+---
 
 ### 🟢 Community Recipes — needs real subscriber data to activate
 - Table is created, promotion job is written
