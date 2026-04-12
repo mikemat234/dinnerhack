@@ -13,9 +13,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 
+// Must match pipeline/scraper.js STORE_MAP keys and OnboardingWizard AVAILABLE_STORES
 const ALL_STORES = [
-  "Aldi", "Giant Eagle", "Kroger", "Walmart",
-  "Meijer", "Costco", "Trader Joe's", "Whole Foods",
+  { name: "Walmart",        emoji: "🛒" },
+  { name: "ALDI",           emoji: "🛍️" },
+  { name: "Giant Eagle",    emoji: "🦅" },
+  { name: "Kroger",         emoji: "🏪" },
+  { name: "Target",         emoji: "🎯" },
+  { name: "Dollar General", emoji: "💲" },
+  { name: "Meijer",         emoji: "🛒" },
+  { name: "Publix",         emoji: "🏪" },
+  { name: "Safeway",        emoji: "🏪" },
+  { name: "Food Lion",      emoji: "🦁" },
+  { name: "Whole Foods",    emoji: "🌿" },
+  { name: "Trader Joe's",   emoji: "🌺" },
 ];
 
 // ── Shared save helper ─────────────────────────────────────────────────────────
@@ -33,7 +44,7 @@ async function patchProfile(userId, updates) {
 export default function SettingsPage({ user, profile, signOut }) {
   // ── Initialise local state from profile prop ──────────────────────────────
   const [familyName, setFamilyName] = useState(profile?.family_name ?? "My Family");
-  const [stores,     setStores]     = useState(profile?.stores ?? ["Aldi", "Giant Eagle"]);
+  const [stores,     setStores]     = useState(profile?.stores ?? ["Walmart", "ALDI"]);
   const [nonoList,   setNonoList]   = useState(profile?.nono_list ?? []);
   const [newNono,    setNewNono]    = useState("");
   const [saveStatus, setSaveStatus] = useState(""); // "saving" | "saved" | "error"
@@ -43,7 +54,7 @@ export default function SettingsPage({ user, profile, signOut }) {
   useEffect(() => {
     if (profile) {
       setFamilyName(profile.family_name ?? "My Family");
-      setStores(profile.stores ?? ["Aldi", "Giant Eagle"]);
+      setStores(profile.stores ?? ["Walmart", "ALDI"]);
       setNonoList(profile.nono_list ?? []);
     }
   }, [profile]);
@@ -164,25 +175,20 @@ export default function SettingsPage({ user, profile, signOut }) {
             We scan flyers from these stores every week
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {ALL_STORES.map(store => {
-              const on = stores.includes(store);
+            {ALL_STORES.map(({ name, emoji }) => {
+              const on = stores.includes(name);
               return (
-                <button key={store} onClick={() => toggleStore(store)} style={{
+                <button key={name} onClick={() => toggleStore(name)} style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "11px 14px",
                   border: `1.5px solid ${on ? "#86efac" : "#e5e7eb"}`,
                   borderRadius: 9, background: on ? "#f0fdf4" : "white",
                   cursor: "pointer", textAlign: "left",
                 }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                    border: `2px solid ${on ? "#16a34a" : "#d1d5db"}`,
-                    background: on ? "#16a34a" : "white",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    {on && <span style={{ color: "white", fontSize: 11, fontWeight: 900 }}>✓</span>}
-                  </div>
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>
+                    {on ? "✓" : emoji}
+                  </span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: on ? "#15803d" : "#374151" }}>
-                    {store}
+                    {name}
                   </span>
                 </button>
               );
