@@ -1,6 +1,6 @@
 # DinnerHack — Project Notes
 
-Last updated: April 10, 2026 (Session 2)
+Last updated: April 12, 2026 (Session 3)
 
 ---
 
@@ -142,6 +142,13 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - Changed from `0 6 * * 1` (Monday 6am) to `0 23 * * 3,0` (Wed + Sun 11pm UTC)
 - Set via `pipeline/railway.json` (not Railway dashboard UI — file takes precedence)
 
+### ✅ DONE — Supabase Service Key Rotated (April 12, 2026)
+- Old legacy JWT service_role key was exposed in chat — no longer in use
+- New key: `sb_secret_...` from Supabase → Settings → API Keys → Secret keys
+- Updated in Railway → Variables → SUPABASE_SERVICE_KEY ✓
+- Updated in pipeline/.env locally ✓
+- Old key is now irrelevant as pipeline uses the new one
+
 ### 🟡 Railway Cron — promoteRecipes not scheduled yet
 - `promoteRecipes.js` exists but hasn't been added to Railway cron schedule
 - Add it to run weekly after scraper.js and fetchRecipes.js
@@ -151,25 +158,41 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - Go to Supabase → Project Settings → API → regenerate service_role key
 - Update Railway env var and pipeline/.env with the new key
 
-### 🔵 NEXT SESSION — Store Picker (onboarding)
-**Decision made:** Use store selection instead of geolocation.
+### ✅ DONE — Store Picker (April 12, 2026)
+**Decision:** Store selection over geolocation — users know where they shop.
 
-**Why store picker beats geolocation:**
-- Users know which stores they shop at
-- National chains (Walmart, ALDI, Target, Dollar General) have identical deals nationwide
-- Regional chains (Giant Eagle, Kroger, Publix) are self-selecting — users only see what's in their area
-- No location permission dialog, no privacy concerns, less friction to sign up
-- Respects real-world constraints: closest store wins, gas is $4+/gallon
+**Why:**
+- National chains (Walmart, ALDI, Target, Dollar General) = same deals nationwide
+- Regional chains (Giant Eagle, Kroger, Publix) = self-selecting, users only pick what exists near them
+- No location permission dialog, no privacy concerns, less friction
+- Gas is $4+/gallon — closest store wins, not best deal 20 miles away
 
-**Core value prop copy:** "Pick the stores you already go to. We'll plan meals around their sales so every trip counts."
+**What was built:**
+- `OnboardingWizard.jsx` Step 1 — 12 stores with emojis in a 2-column grid, checkmarks on select, min 1 required
+- `useMenu.js` — after fetching deals, filters to only deals from `profile.stores` (case-insensitive match)
+- Supabase `profiles` table — `preferred_stores TEXT[]` column added (profile already had `stores` column in use)
+- Default pre-selection: Walmart + ALDI
 
-**What to build:**
-1. Onboarding screen — grid of store logos with checkboxes (Walmart, ALDI, Giant Eagle, Dollar General, Target, Kroger, Publix, Safeway, Meijer, etc.)
-2. Add `preferred_stores TEXT[]` column to `profiles` table in Supabase
-3. Filter deals in `useMenu.js` to only show deals from user's selected stores
-4. Minimum 1 store required to continue onboarding
+**Supported stores (matches pipeline/scraper.js STORE_MAP):**
+Walmart 🛒, ALDI 🛍️, Giant Eagle 🦅, Kroger 🏪, Target 🎯, Dollar General 💲, Meijer 🛒, Publix 🏪, Safeway 🏪, Food Lion 🦁, Whole Foods 🌿, Trader Joe's 🌺
 
-**Estimated build time:** 2-3 hours
+---
+
+### 🔵 NEXT SESSION — Priority Order
+
+1. **Schedule `promoteRecipes.js` on Railway** (30 min)
+   - Add to `pipeline/railway.json` alongside scraper.js and fetchRecipes.js
+
+2. **Test store picker end-to-end** (30 min)
+   - Create test account, go through onboarding, verify menu only shows deals from chosen stores
+
+3. **Settings page — let users change their stores** (1-2 hrs)
+   - Existing users can only change stores during onboarding right now
+   - Add store selector to SettingsPage.jsx with same grid UI
+
+4. **App resilience — last week's deals as fallback** (1-2 hrs)
+   - If scraper fails, show last week's deals with a banner "Showing last week's deals"
+   - In `useMenu.js`: if current week returns 0 deals, query previous week
 
 ---
 
