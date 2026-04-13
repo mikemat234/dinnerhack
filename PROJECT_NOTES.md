@@ -1,6 +1,6 @@
 # DinnerHack — Project Notes
 
-Last updated: April 12, 2026 (Session 3)
+Last updated: April 13, 2026 (Session 4)
 
 ---
 
@@ -131,12 +131,11 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - **Also fixed:** merchant field is `merchant` not `merchant_name` in new API response
 - **Confirmed:** 57 flyers returned for ZIP 15944 including Giant Eagle, ALDI, Walmart, Target, Dollar General
 
-### ✅ FIXED — Recipe link fallback (April 10, 2026)
-- Spoonacular recipes with a real `source_url` → link to that site (Foodista, Food.com, etc.)
-- Spoonacular recipes with null `source_url` → link to AllRecipes search for that meal name
-- Static fallback recipes → always link to AllRecipes search
-- AllRecipes preferred over spoonacular.com because: multiple recipe options, step photos, familiar UX
-- Wife-approved ✓
+### ✅ DECIDED — AllRecipes is the primary recipe destination (April 12, 2026)
+- ALL recipe links go to `https://www.allrecipes.com/search?q={meal name}` — no exceptions
+- Spoonacular `source_url` (Foodista, Food.com, etc.) is ignored for links — only used internally for data
+- Reasons: more recipe choices, step-by-step photos, universally trusted, wife-approved ✓
+- Updated in `menuBuilder.js` — both Spoonacular cards and vault meal cards
 
 ### ✅ FIXED — Cron schedule updated (April 10, 2026)
 - Changed from `0 6 * * 1` (Monday 6am) to `0 23 * * 3,0` (Wed + Sun 11pm UTC)
@@ -149,14 +148,10 @@ node promoteRecipes.js ← promotes popular saved meals → community_recipes ta
 - Updated in pipeline/.env locally ✓
 - Old key is now irrelevant as pipeline uses the new one
 
-### 🟡 Railway Cron — promoteRecipes not scheduled yet
-- `promoteRecipes.js` exists but hasn't been added to Railway cron schedule
-- Add it to run weekly after scraper.js and fetchRecipes.js
-
-### 🟡 Rotate Supabase Service Key
-- The service role key was shared in chat on April 10, 2026
-- Go to Supabase → Project Settings → API → regenerate service_role key
-- Update Railway env var and pipeline/.env with the new key
+### ✅ DONE — promoteRecipes.js added to Railway cron (April 12, 2026)
+- `pipeline/railway.json` startCommand now chains: `node scraper.js && node promoteRecipes.js`
+- promoteRecipes only runs if scraper succeeds (&&)
+- Runs every Wednesday + Sunday at 11pm UTC alongside the deal scrape
 
 ### ✅ DONE — Store Picker (April 12, 2026)
 **Decision:** Store selection over geolocation — users know where they shop.
@@ -178,23 +173,130 @@ Walmart 🛒, ALDI 🛍️, Giant Eagle 🦅, Kroger 🏪, Target 🎯, Dollar G
 
 ---
 
-### 🔵 NEXT SESSION — Priority Order
+### ✅ DECIDED — Regional Launch Strategy (April 12, 2026)
+- **Target region:** Western PA, Eastern Ohio, Maryland, West Virginia
+- **Why:** Covers Giant Eagle territory + all national chains already in scraper
+- **No geolocation needed** — store picker handles this naturally (users self-select regional stores)
+- **Expand later** as user base grows outside the region
 
-1. **Schedule `promoteRecipes.js` on Railway** (30 min)
-   - Add to `pipeline/railway.json` alongside scraper.js and fetchRecipes.js
-
-2. **Test store picker end-to-end** (30 min)
-   - Create test account, go through onboarding, verify menu only shows deals from chosen stores
-
-3. **Settings page — let users change their stores** (1-2 hrs)
-   - Existing users can only change stores during onboarding right now
-   - Add store selector to SettingsPage.jsx with same grid UI
-
-4. **App resilience — last week's deals as fallback** (1-2 hrs)
-   - If scraper fails, show last week's deals with a banner "Showing last week's deals"
-   - In `useMenu.js`: if current week returns 0 deals, query previous week
+### ✅ DONE — Settings page store picker synced (April 12, 2026)
+- `SettingsPage.jsx` ALL_STORES updated to full 12-store list with emojis
+- Matches OnboardingWizard exactly — same names, same emojis, same UX
+- Default fallback corrected to Walmart + ALDI
+- Store buttons now show emoji → flips to ✓ when selected
 
 ---
+
+### 💬 DISCUSSED — Instacart Affiliate + Shopping List Integration (April 12, 2026)
+
+**Plan (in order):**
+
+**IMPORTANT DISCOVERY (April 13, 2026):** "Send to Instacart" and "Send to Walmart Pickup"
+buttons are already in `ShoppingList.jsx` — but they are UI MOCKUPS ONLY. `sendToCart()`
+just sets a state variable to show a "Sent!" style. No API calls, no real cart push happens.
+Grocery list is also still on mockData.js — not wired to real deal data yet.
+
+**Phase 1 — Fix the data pipeline first** (next session — CRITICAL)
+- Fix `currentWeekOf()` bug in `pipeline/transform.js` line 129:
+  - Current: `const diff = (day === 0 ? -6 : 1 - day);`  ← Sunday goes BACK 6 days to last Monday
+  - Fix:     `const diff = (day === 0 ? 1  : 1 - day);`  ← Sunday goes FORWARD to next Monday
+  - Bug effect: scraper runs Sunday 11pm → stamps deals with week_of = last Monday (April 6)
+    → Monday morning app queries week_of = April 13 → finds nothing → falls back to mockData
+- After fix: retrigger scraper on Railway so fresh deals write with correct week_of
+- Wire `useGrocery.js` to real menu deal data instead of importing from mockData.js
+
+**Phase 2 — Copy List button** (~30 min, interim solution)
+- Add "Copy Shopping List" to `GroceryListView.jsx`
+- Formats real ingredient list as plain text → clipboard
+- Bridges the gap while Instacart API approval is pending
+
+**Phase 3 — Instacart Affiliate + Developer Platform** (Mike applies — links below)
+- Apply to Instacart Affiliate Program: https://www.instacart.com/company/affiliate
+  - Runs through Impact.com, no minimum follower count, ~1-2 week approval
+  - Commission: up to 15% per qualifying order, paid ~55 days after month end
+- Apply for Instacart Developer Platform: https://www.instacart.com/company/business/developers
+  - Unlocks multi-item cart API: send ingredient list → pre-filled Instacart cart link
+
+**Phase 4 — Real cart integration** (after affiliate + dev platform approval)
+- Wire up "Send to Instacart" button in `ShoppingList.jsx` with real API call + affiliate link
+- Wire up "Send to Walmart Pickup" button with real Walmart cart API
+- Both buttons already exist in the UI — just need the real logic behind them
+
+**Revenue estimate at 5,000 subscribers / 2,500 Instacart users:**
+- Conservative (3% commission, 1 order/month): ~$6,400/month
+- Middle (5%, 1.5 orders/month): ~$16,000/month
+- Optimistic (8%, 2 orders/month): ~$34,000/month
+- Key: commission only counts if user taps YOUR Instacart link — in-app button is critical
+
+---
+
+### 🔵 NEXT SESSION — Priority Order
+
+1. **Fix week_of bug in transform.js** (5 min — MUST DO FIRST)
+   - File: `pipeline/transform.js` line 129
+   - Change: `const diff = (day === 0 ? -6 : 1 - day);`
+   - To:     `const diff = (day === 0 ? 1  : 1 - day);`
+   - Then retrigger scraper on Railway so this week's data writes correctly
+
+2. **Wire useGrocery.js to real deal data** (1-2 hrs)
+   - Currently imports GROCERY_ITEMS from mockData.js
+   - Needs to pull from the real weekly menu/deals (same data useMenu.js uses)
+   - ShoppingList.jsx also has STORES hardcoded as ["Aldi", "Giant Eagle"] — needs to use user's profile.stores
+
+3. **Last week's deals fallback** (1 hr)
+   - In `useMenu.js`: if current week returns 0 deals, auto-query previous week
+   - Show subtle banner: "Showing last week's deals — new ones coming soon"
+   - Prevents blank menu if scraper fails or week_of mismatch happens again
+
+4. **Copy Shopping List button** (~30 min)
+   - Add to `GroceryListView.jsx` alongside existing cart buttons
+   - Format list as plain text → clipboard → "Copied!" toast
+
+5. **Apply for Instacart affiliate + Developer Platform** (Mike does this)
+   - Links in Phase 3 section above
+   - Do it this week — 1-2 week approval clock starts on application date
+
+6. **Real cart integration** (after approval)
+   - "Send to Instacart" + "Send to Walmart" buttons already exist in ShoppingList.jsx
+   - Just need real API logic wired behind them
+
+---
+
+### 💬 DECIDED — Payments: Stripe + Supabase (April 13, 2026)
+- **Stack:** Stripe for payment processing, Supabase for subscription state
+- **Why not Apple/Google IAP:** DinnerHack is a web app — Apple/Google 30% tax only applies
+  to native App Store apps using in-app purchase. Web payments go direct to Stripe.
+- **Stripe fee:** ~2.9% + $0.30 per transaction (vs 30% App Store cut)
+- **How it works:**
+  - User subscribes on dinnerhack.app via Stripe checkout
+  - Stripe webhook fires on successful payment → backend updates `profiles.subscription_status` to "active"
+  - App reads subscription_status to gate premium features
+  - `profiles.subscription_status` column already exists in Supabase schema ✓
+  - `profiles.billing_date` column already exists for next billing display ✓
+- **Warning:** If DinnerHack ever publishes a native iOS app to the App Store, Apple requires
+  in-app purchase for digital subscriptions sold inside the app (enforced aggressively).
+  Stay web-first to avoid this entirely.
+- **Build priority:** After core data pipeline is fixed and grocery list is wired to real data
+
+### 💬 DECIDED — Referral Viral Loop (April 13, 2026)
+- **Mechanic:** User refers 2 friends who sign up → user gets 1 free month
+- **ReferralPage.jsx already exists** in the app (`src/components/referral/ReferralPage.jsx`)
+  — likely a placeholder, needs to be wired up
+- **What needs to be built:**
+  - Unique referral code per user (stored in profiles table)
+  - Signup flow reads referral code from URL param → credits the referrer
+  - Track referral count per user in profiles or a referrals table
+  - When referral count hits 2 → grant 1 free month (via Stripe coupon or manual status update)
+  - Referral dashboard in ReferralPage.jsx showing count + status
+- **Viral math:** If 20% of users refer 2 people → meaningful compounding growth
+  - 100 users → 40 referrals → those 40 refer 16 more → etc.
+  - Even low conversion rates produce steady organic growth
+- **Stripe integration for free month:** Apply a coupon/credit via Stripe API when threshold hit
+- **Trigger:** Both referred users complete their FIRST paid month ($14 each)
+  - No survival gate needed — nobody will pay $14, wait 3-4 weeks for a refund,
+    just to save a friend $14. Abuse risk is negligible at this price point.
+  - First payment clears → referral counts → hit 2 → Stripe credits referrer 1 free month
+- **Build priority:** After Stripe payments are live (referral reward needs payment system to credit)
 
 ### 🟢 Community Recipes — needs real subscriber data to activate
 - Table is created, promotion job is written
