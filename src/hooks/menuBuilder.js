@@ -241,7 +241,7 @@ function syntheticMealFor(deal, dayIndex, recipeIndex = 0, spoonacularByKey = {}
       tags:            tpl.tags ?? [],
       emoji:           deal.emoji ?? tpl.emoji ?? "🍽️",
       isSaved:         false,
-      recipeUrl:       tpl.source_url ?? ("https://www.allrecipes.com/search?q=" + encodeURIComponent(tpl.meal)),
+      recipeUrl:       "https://www.allrecipes.com/search?q=" + encodeURIComponent(tpl.meal),
       imageUrl:        tpl.image_url ?? null,
       _recipeKey:      key,
       _recipeIndex:    recipeIndex,
@@ -400,11 +400,8 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = [], spoonacular
       ? +((deal.orig - deal.sale) * ASSUMED_QTY_LBS).toFixed(2)
       : 0;
 
-    // Look up a recipe URL from the database for vault meals too
-    const dealKey   = deal ? recipeKeyFor(deal.item.toLowerCase()) : "default";
-    const dbOptions = RECIPE_DATABASE[dealKey] ?? RECIPE_DATABASE.default;
-    const dbMatch   = dbOptions.find(r => r.meal.toLowerCase() === recipe.name.toLowerCase());
-    const recipeUrl = recipe.recipe_url ?? dbMatch?.recipeUrl ?? dbOptions[0]?.recipeUrl ?? null;
+    // Always link to AllRecipes search — more choices, better photos, universally trusted
+    const recipeUrl = "https://www.allrecipes.com/search?q=" + encodeURIComponent(recipe.name);
 
     return {
       id:             String(recipe.id),
