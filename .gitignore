@@ -13,3 +13,6 @@ dist/
 # Misc
 .DS_Store
 *.log
+
+# Local sync backups (Cowork-generated)
+.sync-backup-*/
