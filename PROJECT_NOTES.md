@@ -1,6 +1,21 @@
 # DinnerHack — Project Notes
 
-Last updated: April 13, 2026 (Session 4)
+Last updated: April 16, 2026 (Session 5)
+
+---
+
+## ⭐ START HERE NEXT SESSION
+
+**Wire the grocery list to real data** — this is the #1 priority.
+
+Files to fix:
+1. `src/hooks/useGrocery.js` — replace mockData import with real menu/deal data
+2. `src/components/grocery/ShoppingList.jsx` — replace fake Instacart/Walmart buttons
+   with a single "📋 Copy Shopping List" button (copies plain text to clipboard)
+
+Context: The menu is now showing real live deals (ALDI + Giant Eagle). The grocery
+list is the last major piece still on mock data. Once this is fixed, the core app
+loop is complete: real deals → real menu → real grocery list → copy & shop.
 
 ---
 
@@ -134,32 +149,39 @@ MIN_DISCOUNT_PCT=30
 
 ---
 
-## Known Bugs (fix next session first)
+## Session 5 — April 16, 2026 — What Was Fixed
 
-### 🔴 BUG — week_of wrong on Sunday scraper runs
-- **File:** `pipeline/transform.js` line 129
-- **Problem:** When scraper runs Sunday night, `currentWeekOf()` calculates the
-  PREVIOUS Monday instead of the upcoming Monday. Deals get stamped with last
-  week's date → app queries current week → finds nothing → falls back to mock data.
-- **Fix:** Change line 129:
-  - FROM: `const diff = (day === 0 ? -6 : 1 - day);`
-  - TO:   `const diff = (day === 0 ? 1  : 1 - day);`
-- **After fix:** Retrigger scraper on Railway so this week's data writes correctly
+### ✅ FIXED — week_of bug on Sunday scraper runs
+### ✅ FIXED — dealKey is not defined (frontend error)
+### ✅ FIXED — Railway build timeout (removed Playwright browser download)
+### ✅ FIXED — 659 real deals writing to Supabase successfully
+### ✅ FIXED — Non-food items (Nintendo Switch, Apple Watch, swimming pools) filtered out
+### ✅ FIXED — Target and Dollar General removed (no useful grocery deal data)
+### ✅ FIXED — Walmart removed (Flipp API returns full catalog with no discount data)
+### ✅ FIXED — "Saves $0.00" replaced with "Weekly Special 🏷️" throughout UI
+### ✅ FIXED — Sheet Pan Dinner default replaced — added cheese, egg, sausage, ham, steak, potato recipes
+### ✅ WORKING — App now shows real live menu: Chicken Thigh Stir Fry, Pan Seared Steak, Classic Beef Bolognese, Broccoli Cheddar Soup, One Pot Rice Bowl — all from live ALDI/Giant Eagle deals
 
-### 🔴 BUG — Grocery list still on mock data
+---
+
+## Known Bugs / Next Session
+
+### 🔴 Grocery list still on mock data
 - **File:** `src/hooks/useGrocery.js`
 - **Problem:** Imports `GROCERY_ITEMS` and `PANTRY_STAPLES` from `mockData.js`
   instead of using real deal/menu data. Grocery list never changes.
 - **Fix:** Wire useGrocery.js to pull items from the real weekly menu deals
-- **Also:** `ShoppingList.jsx` has STORES hardcoded as `["Aldi", "Giant Eagle"]`
-  — needs to use `profile.stores` dynamically
+- **Also:** `ShoppingList.jsx` — replace fake Instacart/Walmart buttons with
+  single "📋 Copy Shopping List" button that copies list as plain text to clipboard
 
-### 🟡 UI — Cart buttons are mockups only
-- **File:** `src/components/grocery/ShoppingList.jsx`
-- **Problem:** "Send to Instacart" and "Send to Walmart Pickup" buttons just
-  flip a state variable — no API call happens, nothing goes to any cart.
-- **Fix:** Wire real Instacart API (after Developer Platform approval) and
-  Walmart cart API behind these buttons
+### 🟡 Walmart — not in pipeline yet
+- Flipp API returns Walmart's full product catalog with no before/after pricing
+- Need to build direct Walmart.com Rollback scraper (walmart.com/browse/food/rollback)
+- OR wait for Instacart Developer Platform approval (applied April 16)
+- Add "Coming Soon" label to Walmart in store picker
+
+### 🟡 debug.js still in pipeline folder
+- Temporary debug file — delete before launch
 
 ---
 
