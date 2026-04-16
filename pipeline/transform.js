@@ -19,26 +19,48 @@
 
 const MIN_DISCOUNT_PCT = Number(process.env.MIN_DISCOUNT_PCT ?? 30);
 
-// ── Non-food blocklist ─────────────────────────────────────────────────────────
-// Items matching any of these patterns are skipped — they're not groceries.
-const NON_FOOD_PATTERNS = [
-  // Clothing & apparel
-  /\b(shirt|t-shirt|tee|pants|jeans|shorts|skirt|dress|jacket|coat|hoodie|sweater|sweatshirt|cardigan|blazer|blouse|top|legging|sock|underwear|bra|brief|boxer|pajama|pyjama|robe|swimsuit|bikini|sandal|shoe|boot|sneaker|slipper|glove|hat|cap|scarf|belt|tie|purse|handbag|wallet|backpack)\b/i,
-  // Beauty & personal care
-  /\b(shampoo|conditioner|lotion|moisturizer|sunscreen|deodorant|antiperspirant|toothpaste|toothbrush|mouthwash|razor|shave|cologne|perfume|fragrance|lipstick|mascara|foundation|concealer|eyeliner|blush|nail polish|makeup|cosmetic|skincare|hair color|hair dye)\b/i,
-  // Home & household (non-food)
-  /\b(notepad|notebook|pen|pencil|marker|crayon|binder|folder|tape|staple|scissors|glue|paper towel|tissue|toilet paper|paper plate|plastic bag|trash bag|laundry|detergent|bleach|fabric softener|dryer sheet|dish soap|dishwasher|cleaner|disinfectant|mop|broom|vacuum|sponge|scrub)\b/i,
-  // Electronics & toys
-  /\b(battery|batteries|charger|cable|headphone|earbud|speaker|remote|controller|toy|game|puzzle|doll|action figure|lego|board game|card game)\b/i,
-  // Furniture & home décor
-  /\b(pillow|blanket|sheet|towel|curtain|rug|mat|lamp|candle|vase|picture frame|storage bin|container|basket|shelf|table|chair|desk|drawer)\b/i,
-  // Pet supplies (non-food)
-  /\b(litter|leash|collar|pet bed|aquarium|cage)\b/i,
-];
+// ── Food allowlist ─────────────────────────────────────────────────────────────
+// Items must match at least one food keyword to be kept.
+// This is more reliable than a blocklist — unknown items are excluded by default.
+const FOOD_KEYWORDS = /\b(
+  chicken|turkey|beef|steak|pork|ham|bacon|sausage|hot dog|frank|rib|lamb|veal|duck|
+  ground|chop|roast|brisket|tenderloin|loin|cutlet|drumstick|wing|thigh|breast|
+  fish|salmon|tuna|tilapia|cod|shrimp|crab|lobster|scallop|clam|oyster|seafood|
+  broccoli|tomato|potato|pepper|onion|garlic|carrot|corn|banana|berr|orange|
+  lemon|lime|avocado|lettuce|salad|spinach|kale|cabbage|cucumber|zucchini|squash|
+  mushroom|celery|asparagus|green bean|pea|beet|mango|pineapple|grape|watermelon|
+  melon|peach|plum|cherry|produce|vegetable|veggie|fruit|
+  milk|cheese|yogurt|butter|cream|egg|dairy|
+  bread|bagel|muffin|pastry|roll|bun|tortilla|wrap|pita|
+  pasta|rice|soup|broth|stock|sauce|salsa|oil|cereal|coffee|tea|juice|soda|
+  drink|beverage|water|snack|chip|cracker|pretzel|cookie|candy|chocolate|
+  ice cream|frozen meal|frozen pizza|frozen dinner|pizza|
+  deli|lunch meat|burger|taco|burrito|seasoning|spice|herb|vinegar|
+  condiment|ketchup|mustard|mayo|dressing|marinade|
+  flour|sugar|baking|granola|oat|bar|protein bar|
+  apple(?!\s*(watch|tv|air|pro|max|ipad|iphone|mac))|
+  organic|fresh|lean|whole grain|
+  grocery|food|meal|dinner|lunch|breakfast
+)\b/ix;
 
-function isNonFood(name, category = "") {
+// ── Non-food hard blocklist ────────────────────────────────────────────────────
+// Catches edge cases where a food word appears in a non-food item name.
+const NON_FOOD_HARD_BLOCK = /\b(
+  watch|nintendo|playstation|xbox|ipad|iphone|macbook|laptop|tablet|television|tv\b|
+  shirt|pants|jeans|jacket|shoe|boot|sock|underwear|pajama|clothing|apparel|
+  trash bag|paper plate|paper towel|toilet paper|tissue|kleenex|
+  laundry|detergent|bleach|dish soap|cleaner|disinfectant|
+  shampoo|conditioner|lotion|sunscreen|deodorant|toothpaste|toothbrush|
+  makeup|cosmetic|lipstick|mascara|perfume|cologne|
+  air purifier|vacuum|mop|broom|lamp|pillow|blanket|curtain|rug|
+  notepad|notebook|pen|pencil|marker|crayon|
+  pet food|cat food|dog food|bird seed|litter
+)\b/ix;
+
+function isFoodItem(name, category = "") {
   const text = `${name} ${category}`;
-  return NON_FOOD_PATTERNS.some(p => p.test(text));
+  if (NON_FOOD_HARD_BLOCK.test(text)) return false;
+  return FOOD_KEYWORDS.test(text);
 }
 
 // ── Emoji map (category keyword → emoji) ──────────────────────────────────────
@@ -201,10 +223,10 @@ export function transformItems(storeDisplayName, rawItems) {
     // Skip if we can't determine a sale price
     if (salePrice == null || isNaN(salePrice) || salePrice <= 0) continue;
 
-    // Skip non-food items (clothing, office supplies, home goods, etc.)
+    // Skip non-food items — only keep items that match food keywords
     const itemName0 = (item.name ?? "").trim();
     const category0 = (item.category ?? "").trim();
-    if (isNonFood(itemName0, category0)) continue;
+    if (!isFoodItem(itemName0, category0)) continue;
 
     // ── Discount filter ─────────────────────────────────────────────────────
     // If original price exists, require minimum discount %
