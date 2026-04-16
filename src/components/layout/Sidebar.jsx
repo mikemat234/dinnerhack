@@ -43,18 +43,34 @@ export default function Sidebar({ active, setActive, totalSaved, user, signOut }
       {/* Savings pill */}
       <div style={{
         margin: "14px 14px 0",
-        background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-        border: "1px solid #a7f3d0", borderRadius: 10, padding: "11px 14px",
+        background: totalSaved > 0
+          ? "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)"
+          : "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
+        border: `1px solid ${totalSaved > 0 ? "#a7f3d0" : "#fde68a"}`,
+        borderRadius: 10, padding: "11px 14px",
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: totalSaved > 0 ? "#059669" : "#d97706", textTransform: "uppercase", letterSpacing: "0.5px" }}>
           This week
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#065f46", marginTop: 1 }}>
-          ${totalSaved.toFixed(2)} saved
-        </div>
-        <div style={{ fontSize: 11, color: "#34d399", marginTop: 1 }}>
-          vs. regular grocery prices
-        </div>
+        {totalSaved > 0 ? (
+          <>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#065f46", marginTop: 1 }}>
+              ${totalSaved.toFixed(2)} saved
+            </div>
+            <div style={{ fontSize: 11, color: "#34d399", marginTop: 1 }}>
+              vs. regular grocery prices
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#92400e", marginTop: 1 }}>
+              Weekly Specials 🏷️
+            </div>
+            <div style={{ fontSize: 11, color: "#d97706", marginTop: 1 }}>
+              curated from your stores
+            </div>
+          </>
+        )}
       </div>
 
       {/* Nav */}
