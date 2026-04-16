@@ -75,9 +75,41 @@ export const RECIPE_DATABASE = {
     { meal: "Broccoli Cheddar Soup",            subtitle: "with Crusty Bread for Dipping",              emoji: "🫕", prepTime: "35 min", tags: ["Comfort Food", "Vegetarian"],      recipeUrl: "https://www.allrecipes.com/search?q=broccoli+cheddar+soup" },
     { meal: "Roasted Broccoli Pasta",           subtitle: "with Garlic, Lemon & Parmesan",              emoji: "🍝", prepTime: "30 min", tags: ["Vegetarian", "Quick"],             recipeUrl: "https://www.allrecipes.com/search?q=roasted+broccoli+pasta+garlic+parmesan" },
   ],
+  cheese: [
+    { meal: "Broccoli Cheddar Soup",            subtitle: "with Crusty Bread for Dipping",              emoji: "🫕", prepTime: "35 min", tags: ["Comfort Food", "Vegetarian"],      recipeUrl: "https://www.allrecipes.com/search?q=broccoli+cheddar+soup" },
+    { meal: "Baked Mac & Cheese",               subtitle: "with a Golden Breadcrumb Crust",             emoji: "🧀", prepTime: "45 min", tags: ["Comfort Food", "Kid Friendly"],    recipeUrl: "https://www.allrecipes.com/search?q=baked+mac+and+cheese" },
+    { meal: "Cheesy Chicken Quesadillas",       subtitle: "with Salsa, Sour Cream & Guacamole",         emoji: "🫓", prepTime: "20 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/search?q=chicken+quesadillas" },
+    { meal: "Cheesy Baked Potato Soup",         subtitle: "with Sour Cream, Bacon & Chives",            emoji: "🥔", prepTime: "40 min", tags: ["Comfort Food", "Family Favorite"], recipeUrl: "https://www.allrecipes.com/search?q=cheesy+baked+potato+soup" },
+  ],
+  egg: [
+    { meal: "Veggie Frittata",                  subtitle: "with Bell Peppers, Spinach & Feta",          emoji: "🍳", prepTime: "25 min", tags: ["Vegetarian", "High Protein"],      recipeUrl: "https://www.allrecipes.com/search?q=vegetable+frittata" },
+    { meal: "Shakshuka",                        subtitle: "with Eggs Poached in Spiced Tomato Sauce",   emoji: "🍳", prepTime: "25 min", tags: ["Vegetarian", "Quick"],             recipeUrl: "https://www.allrecipes.com/search?q=shakshuka" },
+    { meal: "Fried Rice",                       subtitle: "with Eggs, Peas, Carrots & Soy Sauce",      emoji: "🍳", prepTime: "20 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/search?q=egg+fried+rice" },
+    { meal: "Breakfast Burritos for Dinner",    subtitle: "with Scrambled Eggs, Cheese & Salsa",        emoji: "🌯", prepTime: "20 min", tags: ["Quick", "Family Favorite"],        recipeUrl: "https://www.allrecipes.com/search?q=breakfast+burrito" },
+  ],
+  sausage: [
+    { meal: "Sausage & Pepper Skillet",         subtitle: "with Bell Peppers, Onions & Crusty Bread",   emoji: "🌭", prepTime: "30 min", tags: ["One Pan", "Quick"],               recipeUrl: "https://www.allrecipes.com/search?q=sausage+and+peppers+skillet" },
+    { meal: "Sausage & White Bean Soup",        subtitle: "with Kale, Tomatoes & Crusty Bread",         emoji: "🍲", prepTime: "35 min", tags: ["Comfort Food", "Meal Prep"],       recipeUrl: "https://www.allrecipes.com/search?q=sausage+white+bean+soup" },
+    { meal: "Sausage Pasta Bake",               subtitle: "with Marinara, Mozzarella & Ricotta",        emoji: "🍝", prepTime: "45 min", tags: ["Comfort Food", "Freezer Friendly"], recipeUrl: "https://www.allrecipes.com/search?q=sausage+pasta+bake" },
+  ],
+  ham: [
+    { meal: "Ham & Bean Soup",                  subtitle: "with Navy Beans & Crusty Bread",             emoji: "🍲", prepTime: "40 min", tags: ["Comfort Food", "Meal Prep"],       recipeUrl: "https://www.allrecipes.com/search?q=ham+and+bean+soup" },
+    { meal: "Ham & Cheese Stromboli",           subtitle: "with Marinara Dipping Sauce",                emoji: "🫓", prepTime: "35 min", tags: ["Family Favorite", "Easy"],         recipeUrl: "https://www.allrecipes.com/search?q=ham+and+cheese+stromboli" },
+    { meal: "Ham Fried Rice",                   subtitle: "with Eggs, Peas & Green Onion",              emoji: "🍳", prepTime: "20 min", tags: ["Quick", "Kid Friendly"],           recipeUrl: "https://www.allrecipes.com/search?q=ham+fried+rice" },
+  ],
+  steak: [
+    { meal: "Pan-Seared Steak",                 subtitle: "with Garlic Butter, Roasted Potatoes & Asparagus", emoji: "🥩", prepTime: "25 min", tags: ["Date Night", "High Protein"], recipeUrl: "https://www.allrecipes.com/search?q=pan+seared+steak" },
+    { meal: "Steak Stir Fry",                   subtitle: "with Bell Peppers, Broccoli & Brown Rice",   emoji: "🥩", prepTime: "25 min", tags: ["Quick", "High Protein"],           recipeUrl: "https://www.allrecipes.com/search?q=steak+stir+fry" },
+    { meal: "Steak Fajitas",                    subtitle: "with Peppers, Onions & Warm Tortillas",      emoji: "🌮", prepTime: "30 min", tags: ["Crowd Pleaser", "Quick"],          recipeUrl: "https://www.allrecipes.com/search?q=steak+fajitas" },
+  ],
+  potato: [
+    { meal: "Loaded Baked Potato Soup",         subtitle: "with Cheddar, Bacon & Sour Cream",           emoji: "🥔", prepTime: "40 min", tags: ["Comfort Food", "Family Favorite"], recipeUrl: "https://www.allrecipes.com/search?q=loaded+baked+potato+soup" },
+    { meal: "Potato & Sausage Skillet",         subtitle: "with Bell Peppers & Onions",                 emoji: "🍳", prepTime: "30 min", tags: ["One Pan", "Easy"],                recipeUrl: "https://www.allrecipes.com/search?q=potato+sausage+skillet" },
+    { meal: "Twice Baked Potatoes",             subtitle: "with Cheddar, Sour Cream & Chives",          emoji: "🥔", prepTime: "60 min", tags: ["Comfort Food", "Crowd Pleaser"],   recipeUrl: "https://www.allrecipes.com/search?q=twice+baked+potatoes" },
+  ],
   default: [
-    { meal: "Sheet Pan Dinner",                 subtitle: "with This Week's Best Deals",                emoji: "🍽️", prepTime: "40 min", tags: ["Easy", "One Pan"],                recipeUrl: "https://www.allrecipes.com/search?q=sheet+pan+dinner" },
     { meal: "One-Pot Rice Bowl",                subtitle: "with Seasoned Protein & Vegetables",         emoji: "🍚", prepTime: "30 min", tags: ["Easy", "Meal Prep"],               recipeUrl: "https://www.allrecipes.com/search?q=one+pot+rice+bowl" },
+    { meal: "Veggie Stir Fry",                  subtitle: "with This Week's Fresh Picks & Steamed Rice", emoji: "🥦", prepTime: "25 min", tags: ["Easy", "Quick"],                  recipeUrl: "https://www.allrecipes.com/search?q=vegetable+stir+fry" },
   ],
 };
 
@@ -113,7 +145,13 @@ const MEAL_TEMPLATES = {
   pasta:   { meal: "Tomato Cream Pasta",             subtitle: "with Crushed Tomatoes & Fresh Basil",        tags: ["Vegetarian Option", "Comfort Food"],emoji: "🍝", prepTime: "25 min" },
   tomato:  { meal: "Tomato Chicken Skillet",         subtitle: "with Crushed Tomatoes, Herbs & Crusty Bread", tags: ["One Pan", "Quick"],               emoji: "🍅", prepTime: "30 min" },
   broccoli:{ meal: "Beef & Broccoli Stir Fry",       subtitle: "with White Rice & Sesame Sauce",             tags: ["Quick", "Kid Friendly"],           emoji: "🥦", prepTime: "25 min" },
-  default: { meal: "Sheet Pan Dinner",               subtitle: "with This Week's Best Deals",                tags: ["Easy", "One Pan"],                 emoji: "🍽️", prepTime: "40 min" },
+  cheese:  { meal: "Broccoli Cheddar Soup",           subtitle: "with Crusty Bread for Dipping",               tags: ["Comfort Food", "Vegetarian"],      emoji: "🫕", prepTime: "35 min" },
+  egg:     { meal: "Veggie Frittata",                subtitle: "with Bell Peppers, Spinach & Feta",           tags: ["Vegetarian", "High Protein"],      emoji: "🍳", prepTime: "25 min" },
+  sausage: { meal: "Sausage & Pepper Skillet",       subtitle: "with Bell Peppers, Onions & Crusty Bread",    tags: ["One Pan", "Quick"],               emoji: "🌭", prepTime: "30 min" },
+  ham:     { meal: "Ham & Bean Soup",                subtitle: "with Navy Beans & Crusty Bread",              tags: ["Comfort Food", "Meal Prep"],       emoji: "🍲", prepTime: "40 min" },
+  steak:   { meal: "Pan-Seared Steak",               subtitle: "with Garlic Butter & Roasted Potatoes",       tags: ["Date Night", "High Protein"],      emoji: "🥩", prepTime: "25 min" },
+  potato:  { meal: "Loaded Baked Potato Soup",       subtitle: "with Cheddar, Bacon & Sour Cream",            tags: ["Comfort Food", "Family Favorite"], emoji: "🥔", prepTime: "40 min" },
+  default: { meal: "One-Pot Rice Bowl",              subtitle: "with Seasoned Protein & Vegetables",          tags: ["Easy", "Meal Prep"],               emoji: "🍚", prepTime: "30 min" },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
