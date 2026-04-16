@@ -21,41 +21,11 @@ const MIN_DISCOUNT_PCT = Number(process.env.MIN_DISCOUNT_PCT ?? 30);
 
 // ── Food allowlist ─────────────────────────────────────────────────────────────
 // Items must match at least one food keyword to be kept.
-// This is more reliable than a blocklist — unknown items are excluded by default.
-const FOOD_KEYWORDS = /\b(
-  chicken|turkey|beef|steak|pork|ham|bacon|sausage|hot dog|frank|rib|lamb|veal|duck|
-  ground|chop|roast|brisket|tenderloin|loin|cutlet|drumstick|wing|thigh|breast|
-  fish|salmon|tuna|tilapia|cod|shrimp|crab|lobster|scallop|clam|oyster|seafood|
-  broccoli|tomato|potato|pepper|onion|garlic|carrot|corn|banana|berr|orange|
-  lemon|lime|avocado|lettuce|salad|spinach|kale|cabbage|cucumber|zucchini|squash|
-  mushroom|celery|asparagus|green bean|pea|beet|mango|pineapple|grape|watermelon|
-  melon|peach|plum|cherry|produce|vegetable|veggie|fruit|
-  milk|cheese|yogurt|butter|cream|egg|dairy|
-  bread|bagel|muffin|pastry|roll|bun|tortilla|wrap|pita|
-  pasta|rice|soup|broth|stock|sauce|salsa|oil|cereal|coffee|tea|juice|soda|
-  drink|beverage|water|snack|chip|cracker|pretzel|cookie|candy|chocolate|
-  ice cream|frozen meal|frozen pizza|frozen dinner|pizza|
-  deli|lunch meat|burger|taco|burrito|seasoning|spice|herb|vinegar|
-  condiment|ketchup|mustard|mayo|dressing|marinade|
-  flour|sugar|baking|granola|oat|bar|protein bar|
-  apple(?!\s*(watch|tv|air|pro|max|ipad|iphone|mac))|
-  organic|fresh|lean|whole grain|
-  grocery|food|meal|dinner|lunch|breakfast
-)\b/ix;
+const FOOD_KEYWORDS = /\b(chicken|turkey|beef|steak|pork|ham|bacon|sausage|hot dog|frank|rib|lamb|veal|duck|ground|chop|roast|brisket|tenderloin|loin|cutlet|drumstick|wing|thigh|breast|fish|salmon|tuna|tilapia|cod|shrimp|crab|lobster|scallop|clam|oyster|seafood|broccoli|tomato|potato|pepper|onion|garlic|carrot|corn|banana|berr|orange|lemon|lime|avocado|lettuce|salad|spinach|kale|cabbage|cucumber|zucchini|squash|mushroom|celery|asparagus|green bean|pea|beet|mango|pineapple|grape|watermelon|melon|peach|plum|cherry|produce|vegetable|veggie|fruit|milk|cheese|yogurt|butter|cream|egg|dairy|bread|bagel|muffin|pastry|roll|bun|tortilla|wrap|pita|pasta|rice|soup|broth|stock|sauce|salsa|oil|cereal|coffee|tea|juice|soda|drink|beverage|snack|chip|cracker|pretzel|cookie|candy|chocolate|ice cream|pizza|deli|lunch meat|burger|taco|burrito|seasoning|spice|herb|vinegar|condiment|ketchup|mustard|mayo|dressing|marinade|flour|sugar|baking|granola|oat|protein bar|grocery|food|meal|dinner|lunch|breakfast|frozen)\b/i;
 
 // ── Non-food hard blocklist ────────────────────────────────────────────────────
-// Catches edge cases where a food word appears in a non-food item name.
-const NON_FOOD_HARD_BLOCK = /\b(
-  watch|nintendo|playstation|xbox|ipad|iphone|macbook|laptop|tablet|television|tv\b|
-  shirt|pants|jeans|jacket|shoe|boot|sock|underwear|pajama|clothing|apparel|
-  trash bag|paper plate|paper towel|toilet paper|tissue|kleenex|
-  laundry|detergent|bleach|dish soap|cleaner|disinfectant|
-  shampoo|conditioner|lotion|sunscreen|deodorant|toothpaste|toothbrush|
-  makeup|cosmetic|lipstick|mascara|perfume|cologne|
-  air purifier|vacuum|mop|broom|lamp|pillow|blanket|curtain|rug|
-  notepad|notebook|pen|pencil|marker|crayon|
-  pet food|cat food|dog food|bird seed|litter
-)\b/ix;
+// Catches edge cases where a food word appears in a non-food item name (e.g. "Apple Watch").
+const NON_FOOD_HARD_BLOCK = /\b(apple watch|nintendo|playstation|xbox|ipad|iphone|macbook|laptop|tablet|television|smart tv|shirt|pants|jeans|jacket|shoe|boot|sock|underwear|pajama|trash bag|paper plate|paper towel|toilet paper|tissue|kleenex|laundry|detergent|bleach|dish soap|cleaner|disinfectant|shampoo|conditioner|lotion|sunscreen|deodorant|toothpaste|toothbrush|makeup|cosmetic|lipstick|mascara|perfume|cologne|air purifier|vacuum|notepad|notebook|pen\b|pencil|marker|cat food|dog food|bird seed|kitty litter)\b/i;
 
 function isFoodItem(name, category = "") {
   const text = `${name} ${category}`;
