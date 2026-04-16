@@ -126,7 +126,7 @@ function parseUnit(priceText = "") {
 export function currentWeekOf() {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon …
-  const diff = (day === 0 ? -6 : 1 - day); // distance back to Monday
+  const diff = (day === 0 ? 1 : 1 - day); // Sun→next Monday, Mon-Sat→this Monday
   const monday = new Date(now);
   monday.setDate(now.getDate() + diff);
   return monday.toISOString().slice(0, 10); // "2026-03-23"
