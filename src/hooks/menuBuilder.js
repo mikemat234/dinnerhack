@@ -394,6 +394,7 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = [], spoonacular
 
     const { recipe, deal } = item;
     const dealIngredients  = deal ? [deal.item] : [];
+    const dealKey          = deal ? recipeKeyFor(deal.item) : "default";
     const costPerServing   = recipe.cost_per_serving
       ?? (deal ? +(deal.sale * ASSUMED_QTY_LBS / (recipe.headcount ?? 4) + PANTRY_COST_PER_SERVING).toFixed(2) : 2.50);
     const weekSaved        = deal

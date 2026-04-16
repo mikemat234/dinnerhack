@@ -164,8 +164,12 @@ export function transformItems(storeDisplayName, rawItems) {
 
   for (const item of rawItems) {
     // ── Resolve prices ──────────────────────────────────────────────────────
-    let salePrice = item.current_price != null ? Number(item.current_price) : null;
-    let origPrice = item.pre_price     != null ? Number(item.pre_price)     : null;
+    // Flipp API uses "price" field (confirmed April 2026)
+    // Also check current_price and price_text as fallbacks
+    let salePrice = item.current_price != null ? Number(item.current_price)
+                  : item.price         != null ? Number(item.price)
+                  : null;
+    let origPrice = item.pre_price != null ? Number(item.pre_price) : null;
 
     // Fall back to price_text parsing
     if (salePrice == null && item.price_text) {
@@ -175,12 +179,14 @@ export function transformItems(storeDisplayName, rawItems) {
     // Skip if we can't determine a sale price
     if (salePrice == null || isNaN(salePrice) || salePrice <= 0) continue;
 
-    // Skip if no original price (can't compute discount)
-    if (origPrice == null || isNaN(origPrice) || origPrice <= 0) continue;
-
     // ── Discount filter ─────────────────────────────────────────────────────
-    const discountPct = Math.round(((origPrice - salePrice) / origPrice) * 100);
-    if (discountPct < MIN_DISCOUNT_PCT) continue;
+    // If original price exists, require minimum discount %
+    // If no original price, include the item anyway (Flipp already marks it as a deal)
+    let discountPct = 0;
+    if (origPrice != null && !isNaN(origPrice) && origPrice > 0) {
+      discountPct = Math.round(((origPrice - salePrice) / origPrice) * 100);
+      if (discountPct < MIN_DISCOUNT_PCT) continue;
+    }
 
     // ── Build record ────────────────────────────────────────────────────────
     const itemName = (item.name ?? "Unknown Item").trim();
@@ -191,7 +197,7 @@ export function transformItems(storeDisplayName, rawItems) {
       id:       buildDealId(storeDisplayName, itemName, weekOf),
       store:    storeDisplayName,
       item:     itemName,
-      orig:     +origPrice.toFixed(2),
+      orig:     origPrice != null ? +origPrice.toFixed(2) : +salePrice.toFixed(2),
       sale:     +salePrice.toFixed(2),
       unit,
       pct:      discountPct,
