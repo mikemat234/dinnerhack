@@ -1,6 +1,8 @@
 export default function StatsBar({ totalSaved, totalCost, avgPerServing }) {
   const stats = [
-    { label: "Weekly Savings",   value: `$${totalSaved.toFixed(2)}`,    bg: "#f0fdf4", border: "#bbf7d0", textColor: "#16a34a" },
+    totalSaved > 0
+      ? { label: "Weekly Savings",   value: `$${totalSaved.toFixed(2)}`,  bg: "#f0fdf4", border: "#bbf7d0", textColor: "#16a34a" }
+      : { label: "This Week's Deals", value: "Weekly Specials 🏷️",        bg: "#fffbeb", border: "#fde68a", textColor: "#d97706" },
     { label: "Est. Total Cost",  value: `$${totalCost.toFixed(2)}`,     bg: "white",   border: "#e5e7eb", textColor: "#111827" },
     { label: "Avg. Per Serving", value: `$${avgPerServing.toFixed(2)}`, bg: "white",   border: "#e5e7eb", textColor: "#111827" },
   ];
