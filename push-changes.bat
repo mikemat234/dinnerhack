@@ -8,7 +8,7 @@ echo === Fetching from GitHub ===
 git fetch origin
 
 echo === Pulling latest from GitHub ===
-git pull origin main --rebase
+git pull origin main:master --rebase
 
 echo === Staging files ===
 git add -A
@@ -17,7 +17,7 @@ echo === Committing ===
 git commit -m "chore: push latest changes"
 
 echo === Pushing to GitHub ===
-git push origin main
+git push origin master:main
 
 echo === DONE ===
 pause
