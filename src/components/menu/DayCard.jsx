@@ -67,7 +67,10 @@ export default function DayCard({ day, updateHeadcount, toggleSaved, regenerateD
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, color: "#9ca3af" }}>⏱ {day.prepTime}</span>
           <span style={{ fontSize: 12, color: "#16a34a", fontWeight: 600 }}>💰 ${day.costPerServing.toFixed(2)}/serving</span>
-          <span style={{ fontSize: 12, color: "#059669", fontWeight: 600 }}>Saves ${day.weekSaved.toFixed(2)}</span>
+          {day.weekSaved > 0
+            ? <span style={{ fontSize: 12, color: "#059669", fontWeight: 600 }}>Saves ${day.weekSaved.toFixed(2)}</span>
+            : <span style={{ fontSize: 12, color: "#d97706", fontWeight: 600 }}>🏷️ Weekly Special</span>
+          }
           <a
             href={recipeUrl}
             target="_blank"

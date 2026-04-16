@@ -119,8 +119,17 @@ export default function RecipePreview({ day, onClose }) {
                 <span style={statValue}>${day.costPerServing.toFixed(2)}</span>
               </div>
               <div style={statBox}>
-                <span style={statLabel}>💚 Weekly Savings</span>
-                <span style={{ ...statValue, color: "#16a34a" }}>${day.weekSaved.toFixed(2)}</span>
+                {day.weekSaved > 0 ? (
+                  <>
+                    <span style={statLabel}>💚 Weekly Savings</span>
+                    <span style={{ ...statValue, color: "#16a34a" }}>${day.weekSaved.toFixed(2)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={statLabel}>🏷️ This Week</span>
+                    <span style={{ ...statValue, color: "#d97706" }}>Weekly Special</span>
+                  </>
+                )}
               </div>
             </div>
 
