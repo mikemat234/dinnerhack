@@ -15,7 +15,6 @@ import { supabase } from "../../lib/supabase";
 
 // Must match pipeline/scraper.js STORE_MAP keys and OnboardingWizard AVAILABLE_STORES
 const ALL_STORES = [
-  { name: "Walmart",        emoji: "🛒" },
   { name: "ALDI",           emoji: "🛍️" },
   { name: "Giant Eagle",    emoji: "🦅" },
   { name: "Kroger",         emoji: "🏪" },

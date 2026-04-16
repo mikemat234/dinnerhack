@@ -19,7 +19,6 @@ import { useState } from "react";
 
 // Stores the scraper supports — matches pipeline/scraper.js STORE_MAP keys
 const AVAILABLE_STORES = [
-  { name: "Walmart",       emoji: "🛒" },
   { name: "ALDI",          emoji: "🛍️" },
   { name: "Giant Eagle",   emoji: "🦅" },
   { name: "Kroger",        emoji: "🏪" },

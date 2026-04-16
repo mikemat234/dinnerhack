@@ -26,10 +26,13 @@ const MAX_RETRIES    = Number(process.env.MAX_RETRIES  ?? 2);
 const RETRY_DELAY_MS = Number(process.env.RETRY_DELAY  ?? 10_000);
 
 /** Map of lowercased Flipp merchant name → display name stored in Supabase */
+// NOTE: Walmart and Target removed — their Flipp data has no before/after pricing,
+// so pct is always 0 and the entire product catalog comes through as "deals".
+// Dollar General removed — general merchandise store, too much non-food noise.
+// Only pure grocery stores with real weekly sale flyers are included.
 const STORE_MAP = {
   "aldi":             "ALDI",
   "giant eagle":      "Giant Eagle",
-  "walmart":          "Walmart",
   "kroger":           "Kroger",
   "meijer":           "Meijer",
   "food lion":        "Food Lion",
