@@ -19,8 +19,6 @@ const ALL_STORES = [
   { name: "ALDI",           emoji: "🛍️" },
   { name: "Giant Eagle",    emoji: "🦅" },
   { name: "Kroger",         emoji: "🏪" },
-  { name: "Target",         emoji: "🎯" },
-  { name: "Dollar General", emoji: "💲" },
   { name: "Meijer",         emoji: "🛒" },
   { name: "Publix",         emoji: "🏪" },
   { name: "Safeway",        emoji: "🏪" },

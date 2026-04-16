@@ -27,12 +27,10 @@ const RETRY_DELAY_MS = Number(process.env.RETRY_DELAY  ?? 10_000);
 
 /** Map of lowercased Flipp merchant name → display name stored in Supabase */
 const STORE_MAP = {
-  "aldi":             "Aldi",
+  "aldi":             "ALDI",
   "giant eagle":      "Giant Eagle",
   "walmart":          "Walmart",
-  "dollar general":   "Dollar General",
   "kroger":           "Kroger",
-  "target":           "Target",
   "meijer":           "Meijer",
   "food lion":        "Food Lion",
   "publix":           "Publix",
