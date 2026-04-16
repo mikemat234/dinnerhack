@@ -19,6 +19,28 @@
 
 const MIN_DISCOUNT_PCT = Number(process.env.MIN_DISCOUNT_PCT ?? 30);
 
+// ── Non-food blocklist ─────────────────────────────────────────────────────────
+// Items matching any of these patterns are skipped — they're not groceries.
+const NON_FOOD_PATTERNS = [
+  // Clothing & apparel
+  /\b(shirt|t-shirt|tee|pants|jeans|shorts|skirt|dress|jacket|coat|hoodie|sweater|sweatshirt|cardigan|blazer|blouse|top|legging|sock|underwear|bra|brief|boxer|pajama|pyjama|robe|swimsuit|bikini|sandal|shoe|boot|sneaker|slipper|glove|hat|cap|scarf|belt|tie|purse|handbag|wallet|backpack)\b/i,
+  // Beauty & personal care
+  /\b(shampoo|conditioner|lotion|moisturizer|sunscreen|deodorant|antiperspirant|toothpaste|toothbrush|mouthwash|razor|shave|cologne|perfume|fragrance|lipstick|mascara|foundation|concealer|eyeliner|blush|nail polish|makeup|cosmetic|skincare|hair color|hair dye)\b/i,
+  // Home & household (non-food)
+  /\b(notepad|notebook|pen|pencil|marker|crayon|binder|folder|tape|staple|scissors|glue|paper towel|tissue|toilet paper|paper plate|plastic bag|trash bag|laundry|detergent|bleach|fabric softener|dryer sheet|dish soap|dishwasher|cleaner|disinfectant|mop|broom|vacuum|sponge|scrub)\b/i,
+  // Electronics & toys
+  /\b(battery|batteries|charger|cable|headphone|earbud|speaker|remote|controller|toy|game|puzzle|doll|action figure|lego|board game|card game)\b/i,
+  // Furniture & home décor
+  /\b(pillow|blanket|sheet|towel|curtain|rug|mat|lamp|candle|vase|picture frame|storage bin|container|basket|shelf|table|chair|desk|drawer)\b/i,
+  // Pet supplies (non-food)
+  /\b(litter|leash|collar|pet bed|aquarium|cage)\b/i,
+];
+
+function isNonFood(name, category = "") {
+  const text = `${name} ${category}`;
+  return NON_FOOD_PATTERNS.some(p => p.test(text));
+}
+
 // ── Emoji map (category keyword → emoji) ──────────────────────────────────────
 const EMOJI_RULES = [
   // Protein
@@ -178,6 +200,11 @@ export function transformItems(storeDisplayName, rawItems) {
 
     // Skip if we can't determine a sale price
     if (salePrice == null || isNaN(salePrice) || salePrice <= 0) continue;
+
+    // Skip non-food items (clothing, office supplies, home goods, etc.)
+    const itemName0 = (item.name ?? "").trim();
+    const category0 = (item.category ?? "").trim();
+    if (isNonFood(itemName0, category0)) continue;
 
     // ── Discount filter ─────────────────────────────────────────────────────
     // If original price exists, require minimum discount %
