@@ -367,8 +367,15 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = [], spoonacular
     if (!spoonacularByKey[r.ingredient_key]) spoonacularByKey[r.ingredient_key] = [];
     spoonacularByKey[r.ingredient_key].push(r);
   }
-  // ── Step 1: top 5 Loss Leaders ─────────────────────────────────────────────
-  const topDeals = [...deals]
+  // ── Step 1: top 5 Loss Leaders — filtered by nonoList ────────────────────
+  // Skip any deal whose item name contains a nono word so we never build a
+  // meal around an ingredient the user wants to avoid (e.g. pork, shellfish).
+  const nonoLower = (nonoList ?? []).map(n => n.toLowerCase());
+  const safeDeals = nonoLower.length > 0
+    ? deals.filter(d => !nonoLower.some(n => d.item.toLowerCase().includes(n)))
+    : deals;
+
+  const topDeals = [...safeDeals]
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 5);
 
@@ -428,8 +435,20 @@ export function buildMenuFromDeals(deals, vaultMeals, nonoList = [], spoonacular
   // ── Step 6: map to MenuDay shape ──────────────────────────────────────────
   return selected.slice(0, 5).map((item, idx) => {
     // Synthetic slot — use Spoonacular if available, else static DB
+    // Skip recipe options that contain nono words (cycle to next option)
     if (!item.recipe) {
-      return syntheticMealFor(item.deal, idx, 0, spoonacularByKey);
+      let recipeIndex = 0;
+      if (nonoLower.length > 0) {
+        const key = recipeKeyFor(item.deal.item.toLowerCase());
+        const options = RECIPE_DATABASE[key] ?? RECIPE_DATABASE.default;
+        // Find first option that doesn't contain a nono word
+        const safeIndex = options.findIndex(opt => {
+          const text = `${opt.meal} ${opt.subtitle ?? ""}`.toLowerCase();
+          return !nonoLower.some(n => text.includes(n));
+        });
+        if (safeIndex >= 0) recipeIndex = safeIndex;
+      }
+      return syntheticMealFor(item.deal, idx, recipeIndex, spoonacularByKey);
     }
 
     const { recipe, deal } = item;
