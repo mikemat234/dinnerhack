@@ -72,6 +72,8 @@ export default function GroceryListView({ menu = [], userId = null }) {
           removeCustomItem={removeCustomItem}
           copyShoppingList={copyShoppingList}
           copied={copied}
+          pantryStaples={pantryStaples}
+          pantryChecked={pantryChecked}
         />
       )}
     </div>

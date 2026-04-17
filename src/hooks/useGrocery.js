@@ -146,6 +146,16 @@ export function useGrocery(menu = [], userId = null) {
       lines.push("");
     }
 
+    // Pantry staples not checked off
+    const pantryNeeds = PANTRY_STAPLES.filter(s => !pantryChecked.has(s));
+    if (pantryNeeds.length) {
+      lines.push("🧂 Pantry Staples Needed");
+      for (const item of pantryNeeds) {
+        lines.push(`  • ${item}`);
+      }
+      lines.push("");
+    }
+
     // Custom items
     const uncheckedCustom = customItems.filter(i => !i.checked);
     if (uncheckedCustom.length) {

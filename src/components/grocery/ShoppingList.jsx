@@ -15,9 +15,14 @@ export default function ShoppingList({
   removeCustomItem,
   copyShoppingList,
   copied,
+  pantryStaples = [],
+  pantryChecked,
 }) {
   // Group deal items by store
   const stores = [...new Set(visibleItems.map(i => i.store))];
+
+  // Pantry items the user doesn't have — need to buy
+  const pantryNeeds = pantryStaples.filter(s => !pantryChecked?.has(s));
 
   return (
     <div>
@@ -92,6 +97,25 @@ export default function ShoppingList({
             <span style={{ fontWeight: 700, color: "#166534", fontSize: 14 }}>Deal items total</span>
             <span style={{ fontWeight: 800, color: "#16a34a", fontSize: 22 }}>${totalPrice.toFixed(2)}</span>
           </div>
+        </div>
+      )}
+
+      {/* Pantry needs — items not checked off in pantry check */}
+      {pantryNeeds.length > 0 && (
+        <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ background: "#f9fafb", padding: "10px 20px", borderBottom: "1px solid #f3f4f6" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>🧂 Pantry Staples Needed</span>
+          </div>
+          {pantryNeeds.map((item, idx) => (
+            <div key={item} style={{
+              padding: "11px 20px", display: "flex", alignItems: "center", gap: 12,
+              borderBottom: idx < pantryNeeds.length - 1 ? "1px solid #f9fafb" : "none",
+              fontSize: 14, color: "#374151",
+            }}>
+              <span style={{ fontSize: 16 }}>🧂</span>
+              <span style={{ flex: 1 }}>{item}</span>
+            </div>
+          ))}
         </div>
       )}
 
