@@ -19,7 +19,7 @@ export default function GroceryListView({ menu = [], userId = null }) {
   } = useGrocery(menu, userId);
 
   // Derive store names from real menu for subtitle
-  const storeNames = [...new Set((menu ?? []).map(d => d?.deal?.store).filter(Boolean))];
+  const storeNames = [...new Set((menu ?? []).map(d => d?._deal?.store).filter(Boolean))];
   const storeLabel = storeNames.length ? storeNames.join(" & ") : "your stores";
 
   return (

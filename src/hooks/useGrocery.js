@@ -28,8 +28,8 @@ function dealItemsFromMenu(menu = []) {
   const items = [];
 
   for (const day of menu) {
-    if (!day?.deal) continue;
-    const { deal } = day;
+    if (!day?._deal) continue;
+    const deal = day._deal;
     const key = deal.id ?? deal.item;
     if (seen.has(key)) continue;
     seen.add(key);
