@@ -121,6 +121,35 @@ async function fetchSpoonacularRecipes(weekOf) {
 }
 
 /**
+ * Load this user's saved weekly menu for the current week.
+ * Returns null if none exists yet (first visit this week).
+ */
+async function fetchSavedWeeklyMenu(userId, weekOf) {
+  const { data, error } = await supabase
+    .from("weekly_menus")
+    .select("menu")
+    .eq("user_id", userId)
+    .eq("week_of", weekOf)
+    .maybeSingle();
+  if (error) throw new Error(`weekly_menus: ${error.message}`);
+  return data?.menu ?? null;
+}
+
+/**
+ * Persist the current week's menu for this user.
+ * Uses upsert so it works for both first save and updates (e.g. after Regenerate).
+ */
+async function saveWeeklyMenu(userId, weekOf, menu) {
+  const { error } = await supabase
+    .from("weekly_menus")
+    .upsert(
+      { user_id: userId, week_of: weekOf, menu, updated_at: new Date().toISOString() },
+      { onConflict: "user_id,week_of" }
+    );
+  if (error) console.warn("[useMenu] Could not save weekly menu:", error.message);
+}
+
+/**
  * Fetch community recipes — meals promoted from saved_meals by promoteRecipes.js.
  * These are meals saved by multiple subscribers, ranked by save_count.
  * Non-fatal: returns [] if the table is empty or not yet populated.
@@ -200,8 +229,9 @@ export function useMenu(userId) {
       try {
         const weekOf = currentWeekOf();
 
-        // ── Parallel fetch: deals + profile + vault + spoonacular + community ──
-        const [rawDeals, profile, vaultMeals, spoonacularRecipes, communityRecipes] = await Promise.all([
+        // ── Parallel fetch: saved menu + deals + profile + vault + recipes ─────
+        const [savedMenu, rawDeals, profile, vaultMeals, spoonacularRecipes, communityRecipes] = await Promise.all([
+          fetchSavedWeeklyMenu(userId, weekOf).catch(() => null),
           fetchDeals(weekOf),
           fetchUserProfile(userId).catch(err => {
             console.warn("[useMenu] Profile not found:", err.message);
@@ -226,9 +256,6 @@ export function useMenu(userId) {
         const nonoList = profile?.nono_list ?? [];
 
         // ── Filter deals to the user's preferred stores ───────────────────────
-        // profile.stores is set during onboarding (e.g. ["Walmart", "ALDI"])
-        // deals.store comes from the scraper (e.g. "Walmart", "Giant Eagle")
-        // Match case-insensitively so "ALDI" matches "aldi" etc.
         const preferredStores = (profile?.stores ?? []).map(s => s.toLowerCase());
         const filteredDeals = preferredStores.length > 0
           ? rawDeals.filter(d => {
@@ -237,7 +264,19 @@ export function useMenu(userId) {
                 dealStore.includes(s) || s.includes(dealStore)
               );
             })
-          : rawDeals; // show all if no preference set (fallback)
+          : rawDeals;
+
+        rawDealsRef.current = filteredDeals.length > 0 ? filteredDeals : DEALS;
+        setDeals(rawDealsRef.current);
+
+        // ── Use saved menu if it exists for this week ─────────────────────────
+        // This keeps the menu stable across sessions — user's plan doesn't
+        // reshuffle every time they reopen the app.
+        if (savedMenu && savedMenu.length > 0) {
+          console.info("[useMenu] Loaded saved weekly menu for", weekOf);
+          setMenu(savedMenu);
+          return;
+        }
 
         if (spoonacularRecipes.length > 0) {
           console.info("[useMenu] Spoonacular recipes loaded:", spoonacularRecipes.length);
@@ -246,17 +285,18 @@ export function useMenu(userId) {
           console.info("[useMenu] Community recipes loaded:", communityRecipes.length);
         }
 
-        // Merge community recipes into spoonacular pool — community recipes rank
-        // first since they are proven popular with real subscribers.
         const allRecipes = [...communityRecipes, ...spoonacularRecipes];
 
-        // ── Build the 5-day menu ──────────────────────────────────────────────
+        // ── Build fresh menu and save it ──────────────────────────────────────
         const builtMenu = filteredDeals.length > 0
           ? buildMenuFromDeals(filteredDeals, vaultMeals, nonoList, allRecipes)
           : INITIAL_MENU;
 
-        rawDealsRef.current = filteredDeals.length > 0 ? filteredDeals : DEALS;
-        setDeals(rawDealsRef.current);
+        // Save so future loads return this same menu all week
+        if (filteredDeals.length > 0) {
+          saveWeeklyMenu(userId, weekOf, builtMenu);
+        }
+
         setMenu(builtMenu);
 
       } catch (err) {
@@ -338,18 +378,24 @@ export function useMenu(userId) {
    * Pure local state update — no DB call needed.
    */
   const regenerateDay = useCallback((id) => {
-    setMenu(prev => prev.map((day, idx) => {
-      if (day.id !== id) return day;
+    setMenu(prev => {
+      const updated = prev.map((day, idx) => {
+        if (day.id !== id) return day;
 
-      // Find the deal this day is anchored to
-      const allDeals = rawDealsRef.current;
-      const topDeals = [...allDeals].sort((a, b) => b.pct - a.pct).slice(0, 5);
-      const deal     = topDeals[idx] ?? topDeals[0];
-      if (!deal) return day;
+        const allDeals = rawDealsRef.current;
+        const topDeals = [...allDeals].sort((a, b) => b.pct - a.pct).slice(0, 5);
+        const deal     = topDeals[idx] ?? topDeals[0];
+        if (!deal) return day;
 
-      return regenerateMealFor(day, deal, idx);
-    }));
-  }, []);
+        return regenerateMealFor(day, deal, idx);
+      });
+
+      // Persist the updated menu so the new recipe sticks on refresh
+      saveWeeklyMenu(userId, currentWeekOf(), updated);
+
+      return updated;
+    });
+  }, [userId]);
 
   // ── Derived values (memoised) ─────────────────────────────────────────────
 
