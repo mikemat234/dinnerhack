@@ -8,13 +8,19 @@ const STEPS = [
   { id: "list",   label: "2. Your List"    },
 ];
 
-export default function GroceryListView() {
+export default function GroceryListView({ menu = [], userId = null }) {
   const [step, setStep] = useState("pantry");
   const {
     pantryStaples, pantryChecked, togglePantry,
-    visibleItems, removeItem,
-    totalPrice, cartSentTo, sendToCart,
-  } = useGrocery();
+    visibleItems, removeItem, totalPrice,
+    customItems, customInput, setCustomInput,
+    addCustomItem, toggleCustomItem, removeCustomItem,
+    copyShoppingList, copied,
+  } = useGrocery(menu, userId);
+
+  // Derive store names from real menu for subtitle
+  const storeNames = [...new Set((menu ?? []).map(d => d?.deal?.store).filter(Boolean))];
+  const storeLabel = storeNames.length ? storeNames.join(" & ") : "your stores";
 
   return (
     <div>
@@ -23,7 +29,7 @@ export default function GroceryListView() {
           Grocery List
         </h1>
         <p style={{ color: "#9ca3af", fontSize: 14, margin: 0 }}>
-          Optimized for this week's deals · Aldi &amp; Giant Eagle
+          This week's deals · {storeLabel}
         </p>
       </div>
 
@@ -57,9 +63,15 @@ export default function GroceryListView() {
         <ShoppingList
           visibleItems={visibleItems}
           totalPrice={totalPrice}
-          cartSentTo={cartSentTo}
-          sendToCart={sendToCart}
           removeItem={removeItem}
+          customItems={customItems}
+          customInput={customInput}
+          setCustomInput={setCustomInput}
+          addCustomItem={addCustomItem}
+          toggleCustomItem={toggleCustomItem}
+          removeCustomItem={removeCustomItem}
+          copyShoppingList={copyShoppingList}
+          copied={copied}
         />
       )}
     </div>

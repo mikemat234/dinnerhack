@@ -88,7 +88,7 @@ function MainApp({ user, signOut, profile }) {
               goToGrocery={() => setTab("grocery")}
             />
           )}
-          {tab === "grocery"  && <GroceryListView />}
+          {tab === "grocery"  && <GroceryListView menu={menu} userId={user?.id} />}
           {tab === "vault"    && <RecipeVault />}
           {tab === "refer"    && <ReferralPage />}
           {tab === "settings" && (
