@@ -33,6 +33,9 @@ const RETRY_DELAY_MS = Number(process.env.RETRY_DELAY  ?? 10_000);
 const STORE_MAP = {
   "aldi":             "ALDI",
   "giant eagle":      "Giant Eagle",
+  "shop 'n save":     "Shop 'n Save",
+  "wegman":           "Wegmans",
+  "martin":           "Martin's Food Market",
   "kroger":           "Kroger",
   "meijer":           "Meijer",
   "food lion":        "Food Lion",

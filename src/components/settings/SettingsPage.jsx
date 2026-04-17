@@ -15,15 +15,18 @@ import { supabase } from "../../lib/supabase";
 
 // Must match pipeline/scraper.js STORE_MAP keys and OnboardingWizard AVAILABLE_STORES
 const ALL_STORES = [
-  { name: "ALDI",           emoji: "🛍️" },
-  { name: "Giant Eagle",    emoji: "🦅" },
-  { name: "Kroger",         emoji: "🏪" },
-  { name: "Meijer",         emoji: "🛒" },
-  { name: "Publix",         emoji: "🏪" },
-  { name: "Safeway",        emoji: "🏪" },
-  { name: "Food Lion",      emoji: "🦁" },
-  { name: "Whole Foods",    emoji: "🌿" },
-  { name: "Trader Joe's",   emoji: "🌺" },
+  { name: "ALDI",                emoji: "🛍️" },
+  { name: "Giant Eagle",         emoji: "🦅" },
+  { name: "Shop 'n Save",        emoji: "🏪" },
+  { name: "Wegmans",             emoji: "🌿" },
+  { name: "Martin's Food Market",emoji: "🏪" },
+  { name: "Kroger",              emoji: "🏪" },
+  { name: "Meijer",              emoji: "🛒" },
+  { name: "Publix",              emoji: "🏪" },
+  { name: "Safeway",             emoji: "🏪" },
+  { name: "Food Lion",           emoji: "🦁" },
+  { name: "Whole Foods",         emoji: "🌿" },
+  { name: "Trader Joe's",        emoji: "🌺" },
 ];
 
 // ── Shared save helper ─────────────────────────────────────────────────────────

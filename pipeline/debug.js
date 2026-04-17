@@ -2,15 +2,12 @@ import "dotenv/config";
 import { scrapeFlipp } from "./flipp.js";
 
 const ZIP = process.env.ZIP_CODE ?? "15944";
-const results = await scrapeFlipp(ZIP, ["save a lot"]);
-const items = results["save a lot"] ?? [];
+const results = await scrapeFlipp(ZIP, ["shop 'n save", "wegman", "martin"]);
 
-console.log("\n=== SAVE A LOT: total items fetched:", items.length, "===");
-console.log("\n=== FIRST 5 RAW SAVE A LOT ITEMS (ALL FIELDS) ===");
-for (const item of items.slice(0, 5)) {
-  const clean = { ...item };
-  delete clean.merchant_name;
-  delete clean.merchant;
-  console.log(JSON.stringify(clean, null, 2));
-  console.log("---");
+for (const [store, items] of Object.entries(results)) {
+  console.log(`\n=== ${store.toUpperCase()}: ${items.length} items ===`);
+  if (items.length === 0) { console.log("  (no data)"); continue; }
+  for (const item of items.slice(0, 3)) {
+    console.log(`  name: ${item.name} | price: ${item.price} | pre_price: ${item.pre_price ?? "none"} | category: ${item.category ?? "none"}`);
+  }
 }

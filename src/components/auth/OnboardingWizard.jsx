@@ -19,15 +19,18 @@ import { useState } from "react";
 
 // Stores the scraper supports — matches pipeline/scraper.js STORE_MAP keys
 const AVAILABLE_STORES = [
-  { name: "ALDI",          emoji: "🛍️" },
-  { name: "Giant Eagle",   emoji: "🦅" },
-  { name: "Kroger",        emoji: "🏪" },
-  { name: "Meijer",        emoji: "🛒" },
-  { name: "Publix",        emoji: "🏪" },
-  { name: "Safeway",       emoji: "🏪" },
-  { name: "Food Lion",     emoji: "🦁" },
-  { name: "Whole Foods",   emoji: "🌿" },
-  { name: "Trader Joe's",  emoji: "🌺" },
+  { name: "ALDI",                emoji: "🛍️" },
+  { name: "Giant Eagle",         emoji: "🦅" },
+  { name: "Shop 'n Save",        emoji: "🏪" },
+  { name: "Wegmans",             emoji: "🌿" },
+  { name: "Martin's Food Market",emoji: "🏪" },
+  { name: "Kroger",              emoji: "🏪" },
+  { name: "Meijer",              emoji: "🛒" },
+  { name: "Publix",              emoji: "🏪" },
+  { name: "Safeway",             emoji: "🏪" },
+  { name: "Food Lion",           emoji: "🦁" },
+  { name: "Whole Foods",         emoji: "🌿" },
+  { name: "Trader Joe's",        emoji: "🌺" },
 ];
 
 const COMMON_ALLERGENS = [
